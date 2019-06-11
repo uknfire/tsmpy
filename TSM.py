@@ -2,7 +2,7 @@ import collections as coll
 import copy
 import math as m
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import networkx as nx
 
 import DCEL
@@ -114,8 +114,6 @@ class Planarization:
     '''
 
     def __init__(self, G, pos=None):
-        G = G.copy()
-        # not determined, may be support?
         assert nx.number_of_selfloops(G) == 0
         assert nx.is_connected(G)
         if pos is None:
@@ -126,17 +124,17 @@ class Planarization:
             assert number_of_cross(G, pos) == 0
             self.embedding = convert_pos_to_embdeding(G, pos)
 
-        self.G = G
-        self.pos = pos
+        self.G = G.copy()
+        self.pos = pos # is only used to find the ext_face now.
         self.dcel = DCEL.Dcel(G, self.embedding)
-        self.ext_face = self.get_external_face(pos)
+        self.ext_face = self.get_external_face()
 
     def copy(self):
         new_planar = self.__new__(self.__class__)
         new_planar.__init__(self.G, self.pos)
         return new_planar
 
-    def get_external_face(self, pos):
+    def get_external_face(self):
         def left_most(G, pos):
             corner_node = min(pos, key=lambda k: (pos[k][0], pos[k][1]))
             other = max(
@@ -150,12 +148,12 @@ class Planarization:
             return sorted([corner_node, other], key=lambda node:
                           (pos[node][1], pos[node][0]))
 
-        if len(pos) < 2:
+        if len(self.pos) < 2:
             return list(self.dcel.face_dict.values())[0]
-        down, up = left_most(self.G, pos)
+        down, up = left_most(self.G, self.pos)
         return self.dcel.half_edge_dict[up, down].inc
 
-    def dfs_face_order(self):  # dfs dual graph, start at ext_face
+    def dfs_face_order(self):  # dfs dual graph, starts at ext_face
         def dfs_face(face, marked):
             marked.add(face.id)
             yield face
@@ -173,8 +171,7 @@ class Orthogonalization:
     def __init__(self, planar):
         assert max(pair[1] for pair in planar.G.degree) <= 4
         assert planar.G.number_of_nodes() > 1
-        # assert nx.is_biconnected(planar.G), list(
-        # nx.nx.articulation_points(planar.G))
+
         self.planar = planar
 
         self.flow_network = self.face_determination()
@@ -195,7 +192,7 @@ class Orthogonalization:
 
         for he in self.planar.dcel.half_edge_dict.values():
             flow_network.add_f2f(he.twin.inc.id, he.inc.id, he.id) # lf -> rf
-                                   
+
 
         return flow_network
 
@@ -206,7 +203,7 @@ class Orthogonalization:
                  # trans=lambda s: s if s[0] != '(' else eval(s.replace('_', ' ')),
                  ):
         '''alert: pulp will automatically transfer node's name into str and repalce some special
-        chars into '_', and pulp will throw a error if there are variable names duplicate.
+        chars into '_', and will throw a error if there are variables' name duplicated.
         '''
         import pulp
 
@@ -237,7 +234,7 @@ class Orthogonalization:
                     (f1, he1_id), (f2, he2_id) = [(f, key)
                                                   for f, keys in self.flow_network.adj[v].items()
                                                   for key in keys]
-                    x = var_dict[v][f1][he1_id]  # random select one
+                    x = var_dict[v][f1][he1_id]
                     y = var_dict[v][f2][he2_id]
                     p = pulp.LpVariable(
                         x.name + "%temp", None, None, pulp.LpInteger)
@@ -294,7 +291,7 @@ class Orthogonalization:
 
         state = prob.solve()
         if state == 1:  # update flow_dict
-            # code here works only when nodes are represented by str likes '(1, 2)'
+            # code here works only when nodes are represented by str, likes '(1, 2)'
             for var in prob.variables():
                 if 'temp' not in var.name:
                     l = var.name.split('%')
@@ -326,10 +323,12 @@ class Compaction:
 
     def __init__(self, ortho):
         self.ortho = ortho
-        self.planar = ortho.planar.copy()
-
-        self.G = ortho.planar.G.copy()
-        self.flow_dict = copy.deepcopy(ortho.flow_dict)
+        if ortho.flow_network.cost == 0:
+            self.planar = ortho.planar
+            self.flow_dict = ortho.flow_dict
+        else:
+            self.planar = ortho.planar.copy()
+            self.flow_dict = copy.deepcopy(ortho.flow_dict)
 
         self.bend_point_processor()
         self.edge_side = self.face_side_processor()
@@ -338,33 +337,33 @@ class Compaction:
 
 
     def bend_point_processor(self):
-            '''Creating dummy nodes for bend-points.
+            '''Create dummy nodes for bends.
             '''
             bends = {}  # left to right
             for he in self.planar.dcel.half_edge_dict.values():
                 lf, rf = he.twin.inc, he.inc
-                # if (lf.id, rf.id) not in bends: # ???
                 flow = self.flow_dict[lf.id][rf.id][he.id]
                 if flow > 0:
                     bends[he.id] = flow
 
             idx = 0
             for he_id, n_bends in bends.items():
-                # what if there are bends on both (u, v) and (v, u)? A: Impossible, not a min cost
+                # Q: what if there are bends on both (u, v) and (v, u)? 
+                # A: Impossible, not a min cost
                 he = self.planar.dcel.half_edge_dict[he_id]
                 u, v = he.get_points()
                 lf_id, rf_id = he.twin.inc.id, he.inc.id
 
-                self.G.remove_edge(u, v)
+                self.planar.G.remove_edge(u, v)
                 self.flow_dict[u][rf_id][u, f'b{idx}'] = self.flow_dict[u][rf_id].pop((u, v))
-                
+
 
 
                 for i in range(n_bends):
                     cur_node = f'b{idx}'
                     pre_node = f'b{idx-1}' if i > 0 else u
                     nxt_node = f'b{idx+1}' if i < n_bends - 1 else v
-                    self.G.add_edge(pre_node, cur_node)
+                    self.planar.G.add_edge(pre_node, cur_node)
                     self.planar.dcel.add_node_between(
                         pre_node, v, cur_node
                     )
@@ -373,8 +372,8 @@ class Compaction:
                     idx += 1
 
                 self.flow_dict[v][lf_id][v, f'b{idx-1}'] = self.flow_dict[v][lf_id].pop((v, u))
-                self.G.add_edge(f'b{idx-1}', v)
-                
+                self.planar.G.add_edge(f'b{idx-1}', v)
+
 
     def face_side_processor(self):
         '''
@@ -389,7 +388,6 @@ class Compaction:
         for face in self.planar.dcel.face_dict.values():
             # set edges' side in internal faces independently at first
             side = 0
-            # for u, v in get_n_window(face.nodes_id, 2):
             for he in face.surround_half_edges():
                 edge_side[he.id] = side
                 end_angle = self.flow_dict[he.succ.ori.id][face.id][he.succ.id]
@@ -420,13 +418,14 @@ class Compaction:
                     break
         return edge_side
 
-    
+
 
     def tidy_rectangle_compaction(self):
-        '''Doing the compaction of TSM algorithm.
-        Compute every edge's length, and store them in self.G.edges[u, v]['len']
         '''
-        def build_flow(target_side):  # DRY: Don't repeat yourself
+        Doing the compaction of TSM algorithm.
+        Compute every edge's length, and store them in self.planar.G.edges[u, v]['len']
+        '''
+        def build_flow(target_side):
             hv_flow = Flow_net()
             for he_id, side in self.edge_side.items():
                 if side == target_side:
@@ -451,7 +450,8 @@ class Compaction:
                 hv_flow.edges[lf_id, rf_id, he_id]['capacity'] = 2**32
             hv_flow.add_edge(source, sink, 'extend_edge',
                              weight=0, lowerbound=0, capacity=2**32)
-            # selfloop
+
+            # selfloop，avoid inner edge longer than border
             # for u, _ in hv_flow.selfloop_edges():
             #     in_nodes = [v for v, _ in hv_flow.in_edges(u)]
             #     assert in_nodes
@@ -480,20 +480,20 @@ class Compaction:
                     hv_flow_dict = hor_flow_dict
 
                 length = hv_flow_dict[lf_id][rf_id][he.id]
-                self.G.edges[he.id]['len'] = length
+                self.planar.G.edges[he.id]['len'] = length
 
     def layout(self):
         pos = {}
         for face in self.planar.dfs_face_order():
             for i, u in enumerate(face.nodes_id):
                 if not pos:
-                    pos[u] = (0, 0)
-                if u in pos:  # find start point
+                    pos[u] = (0, 0) # initial point
+                if u in pos:  # has found a start point
                     new_loop = face.nodes_id[i:] + face.nodes_id[:i]
                     for u, v in zip(new_loop, new_loop[1:]):
                         if v not in pos:
                             side = self.edge_side[u, v]
-                            length = self.G.edges[u, v]['len']
+                            length = self.planar.G.edges[u, v]['len']
                             if side == 1:
                                 pos[v] = (pos[u][0] + length, pos[u][1])
                             elif side == 3:
@@ -506,8 +506,8 @@ class Compaction:
         return pos
 
     def check(self):
-        for u, v in self.G.edges:
+        for u, v in self.planar.G.edges:
             assert self.pos[u][0] == self.pos[v][0] or self.pos[u][1] == self.pos[v][1]
 
     def draw(self, **kwds):
-        nx.draw(self.G, self.pos, **kwds)
+        nx.draw(self.planar.G, self.pos, **kwds)
