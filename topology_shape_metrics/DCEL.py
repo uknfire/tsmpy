@@ -112,7 +112,7 @@ class Dcel:
         self.faces = {}
         for he in self.half_edges.values():
             if not he.inc:
-                face_id = f'f{len(self.faces)}'
+                face_id = ("face", len(self.faces))
                 face = Face(face_id)
                 face.inc = he
                 self.faces[face_id] = face
@@ -124,7 +124,7 @@ class Dcel:
                     other.inc = face
 
         if not self.faces:
-            self.faces['f0'] = Face('f0')
+            self.faces[('face', 0)] = Face(('face', 0))
 
     def add_node_between(self, u: 'id', v: 'id', node_name):
         def insert_node(u, v, mi):
