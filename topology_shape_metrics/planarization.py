@@ -58,10 +58,13 @@ class Planarization:
         return self.dcel.half_edges[up, down].inc
 
     def dfs_face_order(self):  # dfs dual graph, starts at ext_face
-        def dfs_face(face, marked):
+        res = []
+        marked = set()
+        def dfs(face):
+            res.append(face)
             marked.add(face.id)
-            yield face
-            for neighbor_face in set(face.surround_faces()):
-                if neighbor_face.id not in marked:
-                    yield from dfs_face(neighbor_face, marked)
-        yield from dfs_face(self.ext_face, set())
+            for nb in set(face.surround_faces()):
+                if nb.id not in marked:
+                    dfs(nb)
+        dfs(self.ext_face)
+        return res
