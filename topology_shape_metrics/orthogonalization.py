@@ -1,6 +1,6 @@
 import networkx as nx
 from collections import defaultdict
-
+from topology_shape_metrics.flownet import Flow_net
 
 class Orthogonalization:
     '''
@@ -41,7 +41,10 @@ class Orthogonalization:
     def lp_solve(self, weight_of_corner=1, weight_of_sym=0, sym_pairs=None,
                  # trans=lambda s: s if s[0] != '(' else eval(s.replace('_', ' ')),
                  ):
-        '''alert: pulp will automatically transfer node's name into str and repalce some special
+        '''
+        Another way to solve min cost flow problem, make it possible to define constrains.
+
+        Alert: pulp will automatically transfer node's name into str and repalce some special
         chars into '_', and will throw a error if there are variables' name duplicated.
         '''
         import pulp

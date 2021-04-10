@@ -1,26 +1,37 @@
-from .utils import convert_pos_to_embdeding, number_of_cross
+from topology_shape_metrics.utils import convert_pos_to_embdeding, number_of_cross
+from topology_shape_metrics.DCEL import Dcel
 import networkx as nx
-from DCEL import Dcel
 
 class Planarization:
     '''This step determines the topology of the drawing which is described by a planar embedding.
     '''
-
     def __init__(self, G, pos=None):
-        assert nx.number_of_selfloops(G) == 0
-        assert nx.is_connected(G)
         if pos is None:
             is_planar, self.embedding = nx.check_planarity(G)
-            assert is_planar
             pos = nx.combinatorial_embedding_to_pos(self.embedding)
         else:
-            assert number_of_cross(G, pos) == 0
             self.embedding = convert_pos_to_embdeding(G, pos)
 
-        self.G = G.copy()
+        self.G = G
         self.pos = pos  # is only used to find the ext_face now.
         self.dcel = Dcel(G, self.embedding)
         self.ext_face = self.get_external_face()
+
+    @staticmethod
+    def precheck(G, pos=None):
+        if nx.number_of_selfloops(G) > 0:
+            raise Exception("G contains selfloop")
+        if not nx.is_connected(G):
+            raise Exception("G is not a connected graph")
+
+        if pos is None:
+            is_planar, _ = nx.check_planarity(G)
+            if not is_planar:
+                raise Exception("G is not a planar graph")
+        else:
+            if number_of_cross(G, pos) > 0:
+                raise Exception("There are cross edges in pos")
+
 
     def copy(self):
         new_planar = self.__new__(self.__class__)

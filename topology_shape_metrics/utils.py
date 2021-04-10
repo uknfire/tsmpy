@@ -1,13 +1,16 @@
+from networkx import PlanarEmbedding
+from math import atan2
+
 def convert_pos_to_embdeding(G, pos):
     '''only straight line in G.
     '''
-    emd = nx.PlanarEmbedding()
+    emd = PlanarEmbedding()
     for node in G:
         neigh_pos = {
             neigh: (pos[neigh][0]-pos[node][0], pos[neigh][1]-pos[node][1]) for neigh in G[node]
         }
         neighes_sorted = sorted(G.adj[node],
-                                key=lambda v: m.atan2(
+                                key=lambda v: atan2(
                                     neigh_pos[v][1], neigh_pos[v][0])
                                 )  # counter clockwise
         last = None

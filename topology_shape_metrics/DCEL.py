@@ -1,8 +1,12 @@
+"""DCEL means Doubly connected edge list(also known as half-edge data structure).
+It is a data structure to represent an embedding of a planar graph in the plane
+"""
+
 import networkx as nx
 
 class GraphElement():
     def __init__(self, name):
-        self.id = name 
+        self.id = name
 
     def __hash__(self):
         return hash(self.id)
@@ -11,7 +15,7 @@ class GraphElement():
 class Hedge(GraphElement):
     def __init__(self, name):
         super().__init__(name)
-        self.inc = None # the incident face' 
+        self.inc = None # the incident face'
         self.twin = None
         self.ori  = None
         self.pred = None
@@ -38,12 +42,12 @@ class Vertex(GraphElement):
     def surround_faces(self): # clockwise, duplicated
         for he in self.surround_half_edges():
             yield he.inc
-        
+
 
     def surround_half_edges(self): # clockwise
-        yield self.inc 
+        yield self.inc
         he = self.inc.pred.twin
-        while he is not self.inc: 
+        while he is not self.inc:
             yield he
             he = he.pred.twin
 

@@ -1,6 +1,6 @@
 
 from copy import deepcopy
-from .flownet import Flow_net
+from topology_shape_metrics.flownet import Flow_net
 import networkx as nx
 
 class Compaction:
@@ -12,6 +12,7 @@ class Compaction:
     def __init__(self, ortho):
         self.ortho = ortho
         if ortho.flow_network.cost == 0:
+            # no bend point, not modify planar and flow_dict
             self.planar = ortho.planar
             self.flow_dict = ortho.flow_dict
         else:
@@ -64,8 +65,7 @@ class Compaction:
             self.planar.G.add_edge(f'b{idx-1}', v)
 
     def face_side_processor(self):
-        '''
-        Associating edges with face sides.
+        '''Associating edges with face sides.
         '''
 
         def update_face_edge(edge_side, face, base):
@@ -191,9 +191,4 @@ class Compaction:
                     break
         return pos
 
-    def check(self):
-        for u, v in self.planar.G.edges:
-            assert self.pos[u][0] == self.pos[v][0] or self.pos[u][1] == self.pos[v][1]
 
-    def draw(self, **kwds):
-        nx.draw(self.planar.G, self.pos, **kwds)
