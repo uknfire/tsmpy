@@ -38,11 +38,11 @@ class Orthogonalization:
     def tamassia_orthogonalization(self):
         return self.flow_network.min_cost_flow()
 
-    def lp_solve(self, weight_of_corner=1, weight_of_sym=0, sym_pairs=None,
+    def lp_solve(self, weight_of_corner=1,
                  # trans=lambda s: s if s[0] != '(' else eval(s.replace('_', ' ')),
                  ):
         '''
-        Another way to solve min cost flow problem, make it possible to define constrains.
+        Use linear programming to solve min cost flow problem, make it possible to define constrains.
 
         Alert: pulp will automatically transfer node's name into str and repalce some special
         chars into '_', and will throw a error if there are variables' name duplicated.
@@ -84,42 +84,6 @@ class Orthogonalization:
                     prob.addConstraint(y - x <= p)
                     objs.append(weight_of_corner * p)
 
-        # non symmetrics cost
-        if weight_of_sym != 0:
-            if sym_pairs:
-                for u, v in sym_pairs:
-                    if u != v:
-                        faces1 = {
-                            face.id for face in self.planar.dcel.vertex_dict[u].surround_faces()}
-                        faces2 = {
-                            face.id for face in self.planar.dcel.vertex_dict[v].surround_faces()}
-                        for f in faces1 & faces2:
-                            nodes_id = self.planar.dcel.face_dict[f].nodes_id
-                            n = len(nodes_id)
-                            u_succ = nodes_id[(nodes_id.index(u) + 1) % n]
-                            v_succ = nodes_id[(nodes_id.index(v) + 1) % n]
-                            he_u = self.planar.dcel.half_edge_dict[u, u_succ]
-                            he_v = self.planar.dcel.half_edge_dict[v, v_succ]
-
-                            x, y = var_dict[u][f][he_u.id], var_dict[v][f][he_v.id]
-                            p = pulp.LpVariable(
-                                x.name + y.name + "%temp", None, None, pulp.LpInteger)
-                            prob.addConstraint(x - y <= p)
-                            prob.addConstraint(y - x <= p)
-                            objs.append(weight_of_sym * p)
-
-            for v in self.planar.G:
-                if self.planar.G.degree(v) == 3:
-                    for f, keys in self.flow_network.adj[v].items():
-                        if len(keys) == 2:
-                            he1_id, he2_id = list(keys)
-                            x = var_dict[v][f][he1_id]
-                            y = var_dict[v][f][he2_id]
-                            p = pulp.LpVariable(
-                                x.name + y.name + "%temp", None, None, pulp.LpInteger)
-                            prob.addConstraint(x - y <= p)
-                            prob.addConstraint(y - x <= p)
-                            objs.append(weight_of_sym * p)
         prob += pulp.lpSum(objs), "number of bends in graph"
 
         for f in self.planar.dcel.face_dict:
