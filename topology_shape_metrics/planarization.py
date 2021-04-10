@@ -53,9 +53,9 @@ class Planarization:
                           (pos[node][1], pos[node][0]))
 
         if len(self.pos) < 2:
-            return list(self.dcel.face_dict.values())[0]
+            return list(self.dcel.faces.values())[0]
         down, up = left_most(self.G, self.pos)
-        return self.dcel.half_edge_dict[up, down].inc
+        return self.dcel.half_edges[up, down].inc
 
     def dfs_face_order(self):  # dfs dual graph, starts at ext_face
         def dfs_face(face, marked):

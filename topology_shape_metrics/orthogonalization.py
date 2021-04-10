@@ -19,18 +19,18 @@ class Orthogonalization:
     def face_determination(self):
         flow_network = Flow_net()
 
-        for vertex in self.planar.dcel.vertex_dict.values():
+        for vertex in self.planar.dcel.vertices.values():
             flow_network.add_v(vertex.id)
 
-        for face in self.planar.dcel.face_dict.values():
+        for face in self.planar.dcel.faces.values():
             flow_network.add_f(face.id, len(
                 face), face is self.planar.ext_face)
 
-        for vertex in self.planar.dcel.vertex_dict.values():
+        for vertex in self.planar.dcel.vertices.values():
             for he in vertex.surround_half_edges():
                 flow_network.add_v2f(vertex.id, he.inc.id, he.id)
 
-        for he in self.planar.dcel.half_edge_dict.values():
+        for he in self.planar.dcel.half_edges.values():
             flow_network.add_f2f(he.twin.inc.id, he.inc.id, he.id)  # lf -> rf
 
         return flow_network
@@ -62,7 +62,7 @@ class Orthogonalization:
             )
 
         objs = []
-        for he in self.planar.dcel.half_edge_dict.values():
+        for he in self.planar.dcel.half_edges.values():
             lf, rf = he.twin.inc.id, he.inc.id
             objs.append(
                 self.flow_network[lf][rf][he.id]['weight'] *
@@ -86,7 +86,7 @@ class Orthogonalization:
 
         prob += pulp.lpSum(objs), "number of bends in graph"
 
-        for f in self.planar.dcel.face_dict:
+        for f in self.planar.dcel.faces:
             prob += self.flow_network.nodes[f]['demand'] == pulp.lpSum(
                 [var_dict[v][f][he_id] for v, _, he_id in self.flow_network.in_edges(f, keys=True)])
         for v in self.planar.G:

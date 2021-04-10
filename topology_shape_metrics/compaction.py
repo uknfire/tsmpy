@@ -28,7 +28,7 @@ class Compaction:
         '''Create dummy nodes for bends.
         '''
         bends = {}  # left to right
-        for he in self.planar.dcel.half_edge_dict.values():
+        for he in self.planar.dcel.half_edges.values():
             lf, rf = he.twin.inc, he.inc
             flow = self.flow_dict[lf.id][rf.id][he.id]
             if flow > 0:
@@ -38,7 +38,7 @@ class Compaction:
         for he_id, n_bends in bends.items():
             # Q: what if there are bends on both (u, v) and (v, u)?
             # A: Impossible, not a min cost
-            he = self.planar.dcel.half_edge_dict[he_id]
+            he = self.planar.dcel.half_edges[he_id]
             u, v = he.get_points()
             lf_id, rf_id = he.twin.inc.id, he.inc.id
 
@@ -73,7 +73,7 @@ class Compaction:
                 edge_side[he.id] = (edge_side[he.id] + base) % 4
 
         edge_side = {}
-        for face in self.planar.dcel.face_dict.values():
+        for face in self.planar.dcel.faces.values():
             # set edges' side in internal faces independently at first
             side = 0
             for he in face.surround_half_edges():
@@ -115,7 +115,7 @@ class Compaction:
             hv_flow = Flow_net()
             for he_id, side in self.edge_side.items():
                 if side == target_side:
-                    he = self.planar.dcel.half_edge_dict[he_id]
+                    he = self.planar.dcel.half_edges[he_id]
                     lf, rf = he.twin.inc, he.inc
                     lf_id = lf.id
                     rf_id = rf.id if rf.id != self.planar.ext_face.id else 'end'
@@ -152,7 +152,7 @@ class Compaction:
         hor_flow_dict = solve(hor_flow, self.planar.ext_face.id, 'end')
         ver_flow_dict = solve(ver_flow, self.planar.ext_face.id, 'end')
 
-        for he in self.planar.dcel.half_edge_dict.values():
+        for he in self.planar.dcel.half_edges.values():
             if self.edge_side[he.id] in (0, 1):
                 side = self.edge_side[he.id]
 
