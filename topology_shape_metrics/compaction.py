@@ -35,6 +35,7 @@ class Compaction:
                 bends[he.id] = flow
 
         idx = 0
+        # (u, v) -> (u, bend0, bend1, ..., v)
         for he_id, n_bends in bends.items():
             # Q: what if there are bends on both (u, v) and (v, u)?
             # A: Impossible, not a min cost
@@ -43,13 +44,14 @@ class Compaction:
             lf_id, rf_id = he.twin.inc.id, he.inc.id
 
             self.planar.G.remove_edge(u, v)
+            # use ('bend', idx) to represent bend node
             self.flow_dict[u][rf_id][u,
-                                        f'b{idx}'] = self.flow_dict[u][rf_id].pop((u, v))
+                                        ('bend', idx)] = self.flow_dict[u][rf_id].pop((u, v))
 
             for i in range(n_bends):
-                cur_node = f'b{idx}'
-                pre_node = f'b{idx-1}' if i > 0 else u
-                nxt_node = f'b{idx+1}' if i < n_bends - 1 else v
+                cur_node = ('bend', idx)
+                pre_node = ('bend', idx-1) if i > 0 else u
+                nxt_node = ('bend', idx+1) if i < n_bends - 1 else v
                 self.planar.G.add_edge(pre_node, cur_node)
                 self.planar.dcel.add_node_between(
                     pre_node, v, cur_node
@@ -61,8 +63,8 @@ class Compaction:
                 idx += 1
 
             self.flow_dict[v][lf_id][v,
-                                        f'b{idx-1}'] = self.flow_dict[v][lf_id].pop((v, u))
-            self.planar.G.add_edge(f'b{idx-1}', v)
+                                     ('bend', idx-1)] = self.flow_dict[v][lf_id].pop((v, u))
+            self.planar.G.add_edge(('bend', idx-1), v)
 
     def face_side_processor(self):
         '''Associating edges with face sides.
