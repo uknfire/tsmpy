@@ -9,12 +9,12 @@ class TestGML(unittest.TestCase):
         pos = {node: eval(node) for node in G}
 
         tsm = TSM(G, pos)
-        tsm.draw(node_size=10)
+        tsm.display()
         plt.savefig(gml_filename.replace(
             "inputs", "outputs").replace(".gml", ".nolp.svg"))
 
         tsm = TSM(G, pos, checkit=False, uselp=True)
-        tsm.draw(node_size=10)
+        tsm.display()
         plt.savefig(gml_filename.replace(
             "inputs", "outputs").replace(".gml", ".lp.svg"))
 

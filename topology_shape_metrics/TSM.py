@@ -3,8 +3,10 @@
 from topology_shape_metrics.planarization import Planarization
 from topology_shape_metrics.orthogonalization import Orthogonalization
 from topology_shape_metrics.compaction import Compaction
-from topology_shape_metrics.utils import number_of_cross
+from topology_shape_metrics.utils import number_of_cross, overlap_nodes, overlay_edges
 import networkx as nx
+from matplotlib import pyplot as plt
+import matplotlib.patches as mpatches
 
 
 class TSM:
@@ -21,11 +23,28 @@ class TSM:
         self.pos = self.compa.pos
 
     def postcheck(self):
-        for u, v in self.planar.G.edges:
+        for u, v in self.G.edges:
             assert self.pos[u][0] == self.pos[v][0] or self.pos[u][1] == self.pos[v][1]
 
-    def draw(self, **kwds):
-        nx.draw(self.planar.G, self.pos, **kwds)
+
+    def display(self):
+        bend_nodes = {node for node in self.G.nodes if type(node) == tuple and node[0] == 'bend'}
+
+        draw_nodes_kwds = {'G': self.G, 'pos': self.pos, 'node_size': 15, "edgecolors": 'black'}
+
+        nx.draw_networkx_nodes(node_color='white', **draw_nodes_kwds)
+        grey_node = nx.draw_networkx_nodes(nodelist=bend_nodes, node_color='grey', **draw_nodes_kwds)
+        nx.draw_networkx_nodes(nodelist=overlap_nodes(
+            self.G, self.pos), node_color="red", **draw_nodes_kwds)
+
+        nx.draw_networkx_edges(self.G, self.pos)
+        nx.draw_networkx_edges(
+            self.G, self.pos, edgelist=overlay_edges(self.G, self.pos), edge_color='red')
+
+        red_patch = mpatches.Patch(color='red', label='overlay')
+        grey_patch = mpatches.Patch(color='grey', label='bend node')
+        plt.legend(handles=[red_patch, grey_patch])
+
 
     @staticmethod
     def precheck(G, pos=None):

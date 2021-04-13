@@ -45,3 +45,30 @@ def number_of_cross(G, pos, print_it=False):
                     if print_it:
                         print(a, b, c, d)
     return count
+
+
+def overlap_nodes(G, pos):
+    inv_pos = {}
+    for k, v in pos.items():
+        inv_pos[v] = inv_pos.get(v, ()) + (k,)
+    return [node for nodes in inv_pos.values() if len(nodes) > 1 for node in nodes]
+
+
+def overlay_edges(G, pos):
+    res = set()
+    for a, b in G.edges:
+        (xa, ya), (xb, yb) = pos[a], pos[b]
+        for c, d in G.edges:
+            (xc, yc), (xd, yd) = pos[c], pos[d]
+            if (a, b) != (c, d):
+                if xa == xb == xc == xd:
+                    if min(ya, yb) >= max(yc, yd) or max(ya, yb) <= min(yc, yd):
+                        continue
+                    res.add((a, b))
+                    res.add((c, d))
+                if ya == yb == yc == yd:
+                    if min(xa, xb) >= max(xc, xd) or max(xa, xb) <= min(xc, xd):
+                        continue
+                    res.add((a, b))
+                    res.add((c, d))
+    return list(res)
