@@ -1,4 +1,3 @@
-import networkx as nx
 import pulp
 from collections import defaultdict
 from topology_shape_metrics.flownet import Flow_net
