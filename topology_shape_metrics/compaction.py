@@ -1,5 +1,5 @@
-
 from copy import deepcopy
+from collections import defaultdict
 from topology_shape_metrics.flownet import Flow_net
 import networkx as nx
 
@@ -20,9 +20,9 @@ class Compaction:
             self.flow_dict = deepcopy(ortho.flow_dict)
 
         self.bend_point_processor()
-        self.edge_side = self.face_side_processor()
-        self.tidy_rectangle_compaction()
-        self.pos = self.layout()
+        halfedge_side = self.face_side_processor()
+        halfedge_length = self.tidy_rectangle_compaction(halfedge_side)
+        self.pos = self.layout(halfedge_side, halfedge_length)
 
     def bend_point_processor(self):
         '''Create dummy nodes for bends.
@@ -70,16 +70,16 @@ class Compaction:
         '''Associating edges with face sides.
         '''
 
-        def update_face_edge(edge_side, face, base):
+        def update_face_edge(halfedge_side, face, base):
             for he in face.surround_half_edges():
-                edge_side[he.id] = (edge_side[he.id] + base) % 4
+                halfedge_side[he.id] = (halfedge_side[he.id] + base) % 4
 
-        edge_side = {}
+        halfedge_side = {}
         for face in self.planar.dcel.faces.values():
             # set edges' side in internal faces independently at first
             side = 0
             for he in face.surround_half_edges():
-                edge_side[he.id] = side
+                halfedge_side[he.id] = side
                 end_angle = self.flow_dict[he.succ.ori.id][face.id][he.succ.id]
                 if end_angle == 1:
                     # turn right in internal face or turn left in external face
@@ -100,22 +100,22 @@ class Compaction:
                 lf_id = he.twin.inc.id
                 if lf_id in has_updated:  # neighbor face has been updated
                     # the edge that has been updated
-                    l_side = edge_side[he.twin.id]
-                    r_side = edge_side[he.id]  # side of u, v in face
+                    l_side = halfedge_side[he.twin.id]
+                    r_side = halfedge_side[he.id]  # side of u, v in face
                     update_face_edge(
-                        edge_side, face, (l_side + 2) % 4 - r_side)
+                        halfedge_side, face, (l_side + 2) % 4 - r_side)
                     has_updated.add(face.id)
                     break
-        return edge_side
+        return halfedge_side
 
-    def tidy_rectangle_compaction(self):
+    def tidy_rectangle_compaction(self, halfedge_side):
         '''
         Doing the compaction of TSM algorithm.
         Compute every edge's length, and store them in self.planar.G.edges[u, v]['len']
         '''
         def build_flow(target_side):
             hv_flow = Flow_net()
-            for he_id, side in self.edge_side.items():
+            for he_id, side in halfedge_side.items():
                 if side == target_side:
                     he = self.planar.dcel.half_edges[he_id]
                     lf, rf = he.twin.inc, he.inc
@@ -154,9 +154,10 @@ class Compaction:
         hor_flow_dict = solve(hor_flow, self.planar.ext_face.id, ('face', 'end'))
         ver_flow_dict = solve(ver_flow, self.planar.ext_face.id, ('face', 'end'))
 
+        halfedge_length = {}
         for he in self.planar.dcel.half_edges.values():
-            if self.edge_side[he.id] in (0, 1):
-                side = self.edge_side[he.id]
+            if halfedge_side[he.id] in (0, 1):
+                side = halfedge_side[he.id]
 
                 rf = he.inc
                 rf_id = ('face', 'end') if rf.id == self.planar.ext_face.id else rf.id
@@ -168,28 +169,31 @@ class Compaction:
                     hv_flow_dict = hor_flow_dict
 
                 length = hv_flow_dict[lf_id][rf_id][he.id]
-                self.planar.G.edges[he.id]['len'] = length
+                halfedge_length[he.id] = length
+                halfedge_length[he.twin.id] = length
 
-    def layout(self):
+        return halfedge_length
+
+    def layout(self, halfedge_side, halfedge_length):
         pos = {}
         for face in self.planar.dfs_face_order():
-            for i, u in enumerate(face.nodes_id):
+            for start_he in face.surround_half_edges():
                 if not pos:
-                    pos[u] = (0, 0)  # initial point
-                if u in pos:  # has found a start point
-                    new_loop = face.nodes_id[i:] + face.nodes_id[:i]
-                    for u, v in zip(new_loop, new_loop[1:]):
-                        if v not in pos:
-                            side = self.edge_side[u, v]
-                            length = self.planar.G.edges[u, v]['len']
-                            if side == 1:
-                                pos[v] = (pos[u][0] + length, pos[u][1])
-                            elif side == 3:
-                                pos[v] = (pos[u][0] - length, pos[u][1])
-                            elif side == 0:
-                                pos[v] = (pos[u][0], pos[u][1] + length)
-                            else:  # side == 2
-                                pos[v] = (pos[u][0], pos[u][1] - length)
+                    pos[start_he.ori.id] = (0, 0)  # initial point
+                if start_he.ori.id in pos:  # has found a start point
+                    for he in start_he.traverse():
+                        u, v = he.get_points()
+                        side = halfedge_side[he.id]
+                        length = halfedge_length.get(he.id)
+                        x, y = pos[u]
+                        if side == 1:
+                            pos[v] = (x + length, y)
+                        elif side == 3:
+                            pos[v] = (x - length, y)
+                        elif side == 0:
+                            pos[v] = (x, y + length)
+                        else:  # side == 2
+                            pos[v] = (x, y - length)
                     break
         return pos
 
