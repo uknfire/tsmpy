@@ -120,7 +120,7 @@ class Compaction:
                     he = self.planar.dcel.half_edges[he_id]
                     lf, rf = he.twin.inc, he.inc
                     lf_id = lf.id
-                    rf_id = rf.id if rf.id != self.planar.ext_face.id else 'end'
+                    rf_id = rf.id if rf.id != self.planar.ext_face.id else ('face', 'end')
                     hv_flow.add_edge(lf_id, rf_id, he_id)
             return hv_flow
 
@@ -151,15 +151,15 @@ class Compaction:
         hor_flow = build_flow(1)  # up -> bottom
         ver_flow = build_flow(0)  # left -> right
 
-        hor_flow_dict = solve(hor_flow, self.planar.ext_face.id, 'end')
-        ver_flow_dict = solve(ver_flow, self.planar.ext_face.id, 'end')
+        hor_flow_dict = solve(hor_flow, self.planar.ext_face.id, ('face', 'end'))
+        ver_flow_dict = solve(ver_flow, self.planar.ext_face.id, ('face', 'end'))
 
         for he in self.planar.dcel.half_edges.values():
             if self.edge_side[he.id] in (0, 1):
                 side = self.edge_side[he.id]
 
                 rf = he.inc
-                rf_id = 'end' if rf.id == self.planar.ext_face.id else rf.id
+                rf_id = ('face', 'end') if rf.id == self.planar.ext_face.id else rf.id
                 lf_id = he.twin.inc.id
 
                 if side == 0:
