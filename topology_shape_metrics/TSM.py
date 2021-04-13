@@ -10,9 +10,9 @@ import matplotlib.patches as mpatches
 
 
 class TSM:
-    def __init__(self, G, pos=None, checkit=True, uselp=False):
+    def __init__(self, G, init_pos=None, checkit=True, uselp=False):
         if checkit:
-            TSM.precheck(G, pos)
+            TSM.precheck(G, init_pos)
 
         planar = Planarization(G, init_pos)
         ortho = Orthogonalization(planar, uselp)
@@ -33,11 +33,16 @@ class TSM:
         draw_nodes_kwds = {'G': self.G, 'pos': self.pos, 'node_size': 15, "edgecolors": 'black'}
 
         nx.draw_networkx_nodes(node_color='white', **draw_nodes_kwds)
-        grey_node = nx.draw_networkx_nodes(nodelist=bend_nodes, node_color='grey', **draw_nodes_kwds)
+        # bend nodes(dummy nodes, not exist in original graph)
+        nx.draw_networkx_nodes(nodelist=bend_nodes, node_color='grey', **draw_nodes_kwds)
+        # overlap nodes
         nx.draw_networkx_nodes(nodelist=overlap_nodes(
             self.G, self.pos), node_color="red", **draw_nodes_kwds)
 
+
+        # all edges
         nx.draw_networkx_edges(self.G, self.pos)
+        # overlay edges
         nx.draw_networkx_edges(
             self.G, self.pos, edgelist=overlay_edges(self.G, self.pos), edge_color='red')
 
