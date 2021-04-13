@@ -23,6 +23,14 @@ class HalfEdge:
         self.succ = succ
         self.inc = inc
 
+    def traverse(self):
+        he = self.succ
+        yield self
+        while he is not self:
+            yield he
+            he = he.succ
+
+
     def __hash__(self):
         return hash(self.id)
 
@@ -68,11 +76,7 @@ class Face:
             yield he.twin.inc
 
     def surround_half_edges(self): # clockwise
-        yield self.inc
-        he = self.inc.succ
-        while he is not self.inc:
-            yield he
-            he = he.succ
+        yield from self.inc.traverse()
 
     def surround_vertices(self):
         for he in self.surround_half_edges():
