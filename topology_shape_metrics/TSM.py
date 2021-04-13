@@ -14,13 +14,13 @@ class TSM:
         if checkit:
             TSM.precheck(G, pos)
 
-        self.planar = Planarization(G, pos)
-        self.ortho = Orthogonalization(self.planar, uselp)
-        self.compa = Compaction(self.ortho)
+        planar = Planarization(G, init_pos)
+        ortho = Orthogonalization(planar, uselp)
+        compa = Compaction(ortho)
 
-        # self.compa.G != G, it may include additional bend nodes
-        self.G = self.compa.planar.G
-        self.pos = self.compa.pos
+        # self.G != G, it may include additional bend nodes
+        self.G = compa.planar.G
+        self.pos = compa.pos
 
     def postcheck(self):
         for u, v in self.G.edges:
