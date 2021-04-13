@@ -1,60 +1,63 @@
 import networkx as nx
-import TSM
+from topology_shape_metrics.TSM import TSM
 import unittest
+from matplotlib import pyplot as plt
 
-
-def generate(G, pos=None):
-    planar = TSM.Planarization(G, pos)
-    ortho = TSM.Orthogonalization(planar)
-    compa = TSM.Compaction(ortho)
-
-
-# TEST_DIRECTORY = os.path.dirname(__file__)
 class TestGML(unittest.TestCase):
+    def _test(gml_filename):
+        G = nx.Graph(nx.read_gml(gml_filename))
+        pos = {node: eval(node) for node in G}
+
+        tsm = TSM(G, pos)
+        tsm.draw(node_size=10)
+        plt.savefig(gml_filename.replace(
+            "inputs", "outputs").replace(".gml", ".nolp.svg"))
+
+        tsm = TSM(G, pos, checkit=False, usepulp=True)
+        tsm.draw(node_size=10)
+        plt.savefig(gml_filename.replace(
+            "inputs", "outputs").replace(".gml", ".lp.svg"))
+
     def test_01(self):
-        G = nx.Graph(nx.read_gml("test_data/case1.gml"))
-        generate(G, {node: eval(node) for node in G})
+        TestGML._test("test/inputs/case1.gml")
 
     def test_02(self):
-        G = nx.Graph(nx.read_gml("test_data/case1_biconnected.gml"))
-        generate(G, {node: eval(node) for node in G})
+        TestGML._test("test/inputs/case2.gml")
 
     def test_03(self):
-        G = nx.Graph(nx.read_gml("test_data/case2.gml"))
-        generate(G, {node: eval(node) for node in G})
+        TestGML._test("test/inputs/case3.gml")
 
     def test_04(self):
-        G = nx.Graph(nx.read_gml("test_data/case2_biconnected.gml"))
-        generate(G, {node: eval(node) for node in G})
+        TestGML._test("test/inputs/case4.gml")
 
 
 class TestGrid(unittest.TestCase):
-
-    def _test_grid(self, i, j):
+    def _test_grid(i, j):
         G = nx.grid_2d_graph(i, j)
-        generate(G, pos={node: node for node in G})
-        generate(G)
+        pos = {node: node for node in G}
+        TSM(G, pos)
+        TSM(G)
 
     def test_01(self):
-        self._test_grid(1, 2)
+        TestGrid._test_grid(1, 2)
 
     def test_02(self):
-        self._test_grid(2, 1)
+        TestGrid._test_grid(2, 1)
 
     def test_03(self):
-        self._test_grid(1, 5)
+        TestGrid._test_grid(1, 5)
 
     def test_04(self):
-        self._test_grid(5, 1)
+        TestGrid._test_grid(5, 1)
 
     def test_05(self):
-        self._test_grid(5, 5)
+        TestGrid._test_grid(5, 5)
 
     def test_06(self):
-        self._test_grid(3, 3)
+        TestGrid._test_grid(3, 3)
 
     def test_07(self):
-        self._test_grid(9, 9)
+        TestGrid._test_grid(9, 9)
 
 
 if __name__ == '__main__':
