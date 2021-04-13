@@ -21,7 +21,7 @@ def convert_pos_to_embdeding(G, pos):
     return emd
 
 
-def number_of_cross(G, pos, print_it=False):
+def number_of_cross(G, pos):
     '''
     not accurate, may be equal to actual number or double
     '''
@@ -36,14 +36,14 @@ def number_of_cross(G, pos, print_it=False):
         cb = (pb[0] - pc[0], pb[1] - pc[1])
         cd = (pd[0] - pc[0], pd[1] - pc[1])
         return xmul(ca, cd) >= 0 and xmul(cd, cb) >= 0 and f(pa, pb, pc) * f(pa, pb, pd) < 0
+
     count = 0
     for a, b in G.edges:
         for c, d in G.edges:
             if a not in (c, d) and b not in (c, d):
                 if is_cross(pos[a], pos[b], pos[c], pos[d]):
                     count += 1
-                    if print_it:
-                        print(a, b, c, d)
+
     return count
 
 
