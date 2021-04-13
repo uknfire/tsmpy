@@ -34,7 +34,6 @@ plt.savefig("test/outputs/case1.nolp.svg")
 
 # Features
 * Using linear programing to solve minimum-cost flow problem
-* Support multigraph
 
 # Existing problems
 * Edge overlays and crossings in output
