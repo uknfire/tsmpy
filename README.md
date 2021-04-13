@@ -8,10 +8,18 @@ Main idea comes from [A Generic Framework for the Topology-Shape-Metrics Based L
 * Planar
 * Connected
 * Max node degree is no more than 4
+* No selfloop
+
+# Features
+* Using linear programing to solve minimum-cost flow problem
+* Support multigraph
 
 # Existing problems
-* Edge and node overlays in output
+* Edge overlays and crossings in output
+* Node overlaps in output
+
 
 # TODO
 * Cleaner code
-* Fix bugs
+* More comments
+* Fix overlay
