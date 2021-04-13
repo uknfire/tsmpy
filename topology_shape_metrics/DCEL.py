@@ -4,22 +4,22 @@ It is a data structure to represent an embedding of a planar graph in the plane
 
 import networkx as nx
 
-class HalfEdge(GraphElement):
+class HalfEdge:
     def __init__(self, name):
         self.id = name
         self.inc = None # the incident face'
         self.twin = None
         self.ori  = None
-        self.pred = None
+        self.prev = None
         self.succ = None
 
     def get_points(self):
         return self.ori.id, self.twin.ori.id
 
-    def set(self, twin, ori, pred, succ, inc):
+    def set(self, twin, ori, prev, succ, inc):
         self.twin = twin
         self.ori = ori
-        self.pred = pred
+        self.prev = prev
         self.succ = succ
         self.inc = inc
 
@@ -40,10 +40,10 @@ class Vertex:
 
     def surround_half_edges(self): # clockwise
         yield self.inc
-        he = self.inc.pred.twin
+        he = self.inc.prev.twin
         while he is not self.inc:
             yield he
-            he = he.pred.twin
+            he = he.prev.twin
 
     def __hash__(self):
         return hash(self.id)
@@ -105,7 +105,7 @@ class Dcel:
         for he in self.half_edges.values():
             u, v = he.get_points()
             he.succ = self.half_edges[embedding.next_face_half_edge(u, v)]
-            he.succ.pred = he
+            he.succ.prev = he
 
         self.faces = {}
         for he in self.half_edges.values():
@@ -132,10 +132,10 @@ class Dcel:
             # update half_edges
             self.half_edges[u, mi.id] = he1
             self.half_edges[mi.id, v] = he2
-            he1.set(None, he.ori, he.pred, he2, he.inc)
+            he1.set(None, he.ori, he.prev, he2, he.inc)
             he2.set(None, mi, he1, he.succ, he.inc)
-            he1.pred.succ = he1
-            he2.succ.pred = he2
+            he1.prev.succ = he1
+            he2.succ.prev = he2
             # update face
             if he.inc.inc is he:
                 he.inc.inc = he1
