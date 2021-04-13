@@ -18,7 +18,8 @@ class TSM:
             self.ortho.lp_solve()
         self.compa = Compaction(self.ortho)
 
-        self.G = G
+        # self.compa.G != G, it may include additional bend nodes
+        self.G = self.compa.G
         self.pos = self.compa.pos
 
     def postcheck(self):
