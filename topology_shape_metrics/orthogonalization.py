@@ -1,4 +1,5 @@
 import networkx as nx
+import pulp
 from collections import defaultdict
 from topology_shape_metrics.flownet import Flow_net
 
@@ -6,11 +7,14 @@ class Orthogonalization:
     '''works on a planar embedding, changes shape of the graph.
     '''
 
-    def __init__(self, planar):
+    def __init__(self, planar, uselp=False):
         self.planar = planar
 
         self.flow_network = self.face_determination()
-        self.flow_dict = self.tamassia_orthogonalization()
+        if not uselp:
+            self.flow_dict = self.tamassia_orthogonalization()
+        else:
+            self.flow_dict = self.lp_solve()
 
     def face_determination(self):
         flow_network = Flow_net()
@@ -41,7 +45,7 @@ class Orthogonalization:
         Alert: pulp will automatically transfer node's name into str and repalce some special
         chars into '_', and will throw a error if there are variables' name duplicated.
         '''
-        import pulp
+
 
         prob = pulp.LpProblem()  # minimize
 
@@ -92,11 +96,16 @@ class Orthogonalization:
             )
 
         state = prob.solve()
+        res = defaultdict(lambda: defaultdict(dict))
         if state == 1:  # update flow_dict
+            self.flow_network.cost = pulp.value(prob.objective)
             for var in prob.variables():
                 if var.name in varname2tuple:
                     u, v, he_id = varname2tuple[var.name]
-                    self.flow_dict[u][v][he_id] = int(var.varValue)
+                    res[u][v][he_id] = int(var.varValue)
+        else:
+            raise Exception("Problem can't be solved by linear programming")
+        return res
 
 
     # Only for validation

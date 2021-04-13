@@ -8,14 +8,12 @@ import networkx as nx
 
 
 class TSM:
-    def __init__(self, G, pos=None, checkit=True, usepulp=False):
+    def __init__(self, G, pos=None, checkit=True, uselp=False):
         if checkit:
             TSM.precheck(G, pos)
 
         self.planar = Planarization(G, pos)
-        self.ortho = Orthogonalization(self.planar)
-        if usepulp:
-            self.ortho.lp_solve()
+        self.ortho = Orthogonalization(self.planar, uselp)
         self.compa = Compaction(self.ortho)
 
         # self.compa.G != G, it may include additional bend nodes

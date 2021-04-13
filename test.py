@@ -13,7 +13,7 @@ class TestGML(unittest.TestCase):
         plt.savefig(gml_filename.replace(
             "inputs", "outputs").replace(".gml", ".nolp.svg"))
 
-        tsm = TSM(G, pos, checkit=False, usepulp=True)
+        tsm = TSM(G, pos, checkit=False, uselp=True)
         tsm.draw(node_size=10)
         plt.savefig(gml_filename.replace(
             "inputs", "outputs").replace(".gml", ".lp.svg"))
