@@ -4,17 +4,9 @@ It is a data structure to represent an embedding of a planar graph in the plane
 
 import networkx as nx
 
-class GraphElement():
-    def __init__(self, name):
-        self.id = name
-
-    def __hash__(self):
-        return hash(self.id)
-
-
 class HalfEdge(GraphElement):
     def __init__(self, name):
-        super().__init__(name)
+        self.id = name
         self.inc = None # the incident face'
         self.twin = None
         self.ori  = None
@@ -24,17 +16,19 @@ class HalfEdge(GraphElement):
     def get_points(self):
         return self.ori.id, self.twin.ori.id
 
-    def set_all(self, twin, ori, pred, succ, inc):
+    def set(self, twin, ori, pred, succ, inc):
         self.twin = twin
         self.ori = ori
         self.pred = pred
         self.succ = succ
         self.inc = inc
 
+    def __hash__(self):
+        return hash(self.id)
 
-class Vertex(GraphElement):
+class Vertex:
     def __init__(self, name):
-        super().__init__(name)
+        self.id = name
         self.inc = None # 'the first outgoing incident half-edge'
         self.x = None
         self.y = None
@@ -51,10 +45,12 @@ class Vertex(GraphElement):
             yield he
             he = he.pred.twin
 
+    def __hash__(self):
+        return hash(self.id)
 
-class Face(GraphElement):
+class Face:
     def __init__(self, name):
-        super().__init__(name)
+        self.id = name
         self.inc = None # the first half-edge incident to the face from left
         self.nodes_id = []
 
@@ -82,6 +78,8 @@ class Face(GraphElement):
         for he in self.surround_half_edges():
             yield he.ori
 
+    def __hash__(self):
+        return hash(self.id)
 
 class Dcel:
     def __init__(self, G, embedding):
@@ -134,8 +132,8 @@ class Dcel:
             # update half_edges
             self.half_edges[u, mi.id] = he1
             self.half_edges[mi.id, v] = he2
-            he1.set_all(None, he.ori, he.pred, he2, he.inc)
-            he2.set_all(None, mi, he1, he.succ, he.inc)
+            he1.set(None, he.ori, he.pred, he2, he.inc)
+            he2.set(None, mi, he1, he.succ, he.inc)
             he1.pred.succ = he1
             he2.succ.pred = he2
             # update face
