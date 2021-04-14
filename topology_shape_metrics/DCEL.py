@@ -30,6 +30,9 @@ class HalfEdge:
             yield he
             he = he.succ
 
+    def __repr__(self) -> str:
+        return str(self.id)
+
 
     def __hash__(self):
         return hash(self.id)
@@ -38,8 +41,6 @@ class Vertex:
     def __init__(self, name):
         self.id = name
         self.inc = None # 'the first outgoing incident half-edge'
-        self.x = None
-        self.y = None
 
     def surround_faces(self): # clockwise, duplicated
         for he in self.surround_half_edges():
@@ -53,6 +54,12 @@ class Vertex:
             yield he
             he = he.prev.twin
 
+    def get_half_edge(self, face):
+        for he in self.surround_half_edges():
+            if he.inc is face:
+                return he
+        return None
+
     def __hash__(self):
         return hash(self.id)
 
@@ -60,16 +67,12 @@ class Face:
     def __init__(self, name):
         self.id = name
         self.inc = None # the first half-edge incident to the face from left
-        self.nodes_id = []
 
     def __len__(self):
-        return len(self.nodes_id)
+        return len(list(self.surround_vertices()))
 
-    def __repr__(self):
-        return f'FaceView{repr(self.nodes_id)}'
-
-    def update_nodes(self):
-        self.nodes_id = [vertex.id for vertex in self.surround_vertices()]
+    def __repr__(self) -> str:
+        return str(self.id)
 
     def surround_faces(self): # clockwise, duplicated!!
         for he in self.surround_half_edges():
@@ -90,10 +93,12 @@ class Dcel:
         # assert nx.check_planarity(G)[0]
 
         self.vertices = {}
+        self.half_edges = {}
+        self.faces = {}
+
         for node in G.nodes:
             self.vertices[node] = Vertex(node)
 
-        self.half_edges = {}
         for u, v in G.edges:
             he1, he2 = HalfEdge((u, v)), HalfEdge((v, u))
             self.half_edges[he1.id] = he1
@@ -111,7 +116,6 @@ class Dcel:
             he.succ = self.half_edges[embedding.next_face_half_edge(u, v)]
             he.succ.prev = he
 
-        self.faces = {}
         for he in self.half_edges.values():
             if not he.inc:
                 face_id = ("face", len(self.faces))
@@ -128,7 +132,7 @@ class Dcel:
         if not self.faces:
             self.faces[('face', 0)] = Face(('face', 0))
 
-    def add_node_between(self, u: 'id', v: 'id', node_name):
+    def add_node_between(self, u, v, node_name):
         def insert_node(u, v, mi):
             he = self.half_edges.pop((u, v))
             he1 = HalfEdge((u, mi.id))
