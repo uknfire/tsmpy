@@ -137,6 +137,7 @@ class Dcel:
             he = self.half_edges.pop((u, v))
             he1 = HalfEdge((u, mi.id))
             he2 = HalfEdge((mi.id, v))
+            mi.inc = he2
             # update half_edges
             self.half_edges[u, mi.id] = he1
             self.half_edges[mi.id, v] = he2
@@ -147,7 +148,9 @@ class Dcel:
             # update face
             if he.inc.inc is he:
                 he.inc.inc = he1
-            he.inc.update_nodes() # not efficient
+            # update vertex
+            if he.ori.inc is he:
+                he.ori.inc = he1
 
         # update vertices
         mi = Vertex(node_name)
