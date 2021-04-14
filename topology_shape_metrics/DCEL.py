@@ -161,3 +161,28 @@ class Dcel:
         for v1, v2 in ((u, mi.id), (mi.id, v)):
             self.half_edges[v1, v2].twin = self.half_edges[v2, v1]
             self.half_edges[v2, v1].twin = self.half_edges[v1, v2]
+
+    def connect(self, face, u, v): # u, v in same face
+        def insert_halfedge(u, v, f, prev_he, succ_he):
+            he = HalfEdge((u, v))
+            self.half_edges[u, v] = he
+            f.inc = he
+            he.set(None, self.vertices[u], prev_he, succ_he, f)
+            prev_he.succ = he
+            succ_he.prev = he
+            self.faces[f.id] = f
+            for h in he.traverse():
+                h.inc = f
+
+        face_l = Face(('face', *face.id[1:], 'left'))
+        face_r = Face(('face', *face.id[1:], 'right'))
+        prev_he_u = self.vertices[u].get_half_edge(face).prev
+        succ_he_v = self.vertices[v].get_half_edge(face)
+        prev_he_v = self.vertices[v].get_half_edge(face).prev
+        succ_he_u = self.vertices[u].get_half_edge(face)
+
+        insert_halfedge(u, v, face_r, prev_he_u, succ_he_v)
+        insert_halfedge(v, u, face_l, prev_he_v, succ_he_u)
+        self.half_edges[u, v].twin = self.half_edges[v, u]
+        self.half_edges[v, u].twin = self.half_edges[u, v]
+        self.faces.pop(face.id)
