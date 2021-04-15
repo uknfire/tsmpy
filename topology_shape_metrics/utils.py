@@ -1,7 +1,7 @@
 from networkx import PlanarEmbedding
 from math import atan2
 
-def convert_pos_to_embdeding(G, pos):
+def convert_pos_to_embedding(G, pos):
     '''only straight line in G.
     '''
     emd = PlanarEmbedding()

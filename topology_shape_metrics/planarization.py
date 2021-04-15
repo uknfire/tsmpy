@@ -1,4 +1,4 @@
-from topology_shape_metrics.utils import convert_pos_to_embdeding
+from topology_shape_metrics.utils import convert_pos_to_embedding
 from topology_shape_metrics.DCEL import Dcel
 import networkx as nx
 
@@ -10,7 +10,7 @@ class Planarization:
             is_planar, embedding = nx.check_planarity(G)
             pos = nx.combinatorial_embedding_to_pos(embedding)
         else:
-            embedding = convert_pos_to_embdeding(G, pos)
+            embedding = convert_pos_to_embedding(G, pos)
 
         self.G = G
         self.pos = pos  # is only used to find the ext_face now.
