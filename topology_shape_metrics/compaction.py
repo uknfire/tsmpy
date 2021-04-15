@@ -53,7 +53,7 @@ class Compaction:
                 nxt_node = ('bend', idx+1) if i < num_bends - 1 else v
                 self.planar.G.add_edge(pre_node, cur_node)
                 self.planar.dcel.add_node_between(
-                    pre_node, v, cur_node
+                    pre_node, cur_node, v
                 )
                 self.flow_dict.setdefault(cur_node, {}).setdefault(
                     lf_id, {})[cur_node, pre_node] = 1

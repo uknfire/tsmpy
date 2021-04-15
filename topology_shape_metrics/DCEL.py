@@ -133,7 +133,7 @@ class Dcel:
         if not self.faces:
             self.faces[('face', 0)] = Face(('face', 0))
 
-    def add_node_between(self, u, v, node_name):
+    def add_node_between(self, u, node_name, v):
         def insert_node(u, v, mi):
             he = self.half_edges.pop((u, v))
             he1 = HalfEdge((u, mi.id))
