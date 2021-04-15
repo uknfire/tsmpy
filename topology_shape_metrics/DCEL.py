@@ -67,6 +67,7 @@ class Face:
     def __init__(self, name):
         self.id = name
         self.inc = None # the first half-edge incident to the face from left
+        self.is_external = False
 
     def __len__(self):
         return len(list(self.surround_vertices()))

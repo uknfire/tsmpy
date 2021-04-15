@@ -118,7 +118,7 @@ class Compaction:
                 if side == target_side:
                     lf, rf = he.twin.inc, he.inc
                     lf_id = lf.id
-                    rf_id = rf.id if rf.id != self.planar.ext_face.id else ('face', 'end')
+                    rf_id = rf.id if not rf.is_external else ('face', 'end')
                     hv_flow.add_edge(lf_id, rf_id, he.id)
             return hv_flow
 
@@ -158,7 +158,7 @@ class Compaction:
                 side = halfedge_side[he]
 
                 rf = he.inc
-                rf_id = ('face', 'end') if rf.id == self.planar.ext_face.id else rf.id
+                rf_id = ('face', 'end') if rf.is_external else rf.id
                 lf_id = he.twin.inc.id
 
                 if side == 0:

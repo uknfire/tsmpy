@@ -23,7 +23,7 @@ class Orthogonalization:
 
         for face in self.planar.dcel.faces.values():
             flow_network.add_f(face.id, len(
-                face), face is self.planar.ext_face)
+                face), face.is_external)
 
         for vertex in self.planar.dcel.vertices.values():
             for he in vertex.surround_half_edges():
