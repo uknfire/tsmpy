@@ -1,7 +1,10 @@
 from copy import deepcopy
 from collections import defaultdict
 from topology_shape_metrics.flownet import Flow_net
+from topology_shape_metrics.planarization import Planarization
+from topology_shape_metrics.orthogonalization import Orthogonalization
 import networkx as nx
+
 
 class Compaction:
     '''
@@ -10,16 +13,11 @@ class Compaction:
     '''
 
     def __init__(self, ortho):
-        self.ortho = ortho
-        if ortho.flow_network.cost == 0:
-            # no bend point, not modify planar and flow_dict
-            self.planar = ortho.planar
-            self.flow_dict = ortho.flow_dict
-        else:
-            self.planar = ortho.planar.copy()
-            self.flow_dict = deepcopy(ortho.flow_dict)
-
+        self.planar = ortho.planar.copy()
+        self.flow_dict = deepcopy(ortho.flow_dict)
+        # preprocess
         self.bend_point_processor()
+        self.refine_faces()
         halfedge_side = self.face_side_processor()
         halfedge_length = self.tidy_rectangle_compaction(halfedge_side)
         self.pos = self.layout(halfedge_side, halfedge_length)
@@ -65,6 +63,110 @@ class Compaction:
                                      ('bend', idx-1)] = self.flow_dict[v][lf_id].pop((v, u))
             self.planar.G.add_edge(('bend', idx-1), v)
 
+    def refine_faces(self):
+        '''Make face rectangle
+        '''
+        halfedge_side = self.face_side_processor()
+        def search_prev(he, side):
+            while halfedge_side[he] != side:
+                he = he.prev
+            return he
+        def search_succ(he, side):
+            while halfedge_side[he] != side:
+                he = he.succ
+            return he
+
+        inv_front = defaultdict(dict)
+        for face in self.planar.dcel.faces.values():
+            if not face.is_external:
+                for he in face.surround_half_edges():
+                    if (halfedge_side[he] + 1) % 4 != halfedge_side[he.succ]:
+                        # only extend he with side 0 or 2
+                        extend_he = he if halfedge_side[he] in (0, 2) else he.succ
+                        if he is extend_he:
+                            cross_he = search_succ(extend_he, (halfedge_side[extend_he] + 1) % 4)
+                            inv_front[cross_he][he] = (he.succ.ori.id, 1)
+                        else:
+                            cross_he = search_prev(extend_he, (halfedge_side[extend_he] + 3) % 4)
+                            inv_front[cross_he][he] = (he.ori.id, -1)
+
+        # sort dummy nodes in cross_he to avoid cross
+        insert_nodes = {}
+        for cross_he in inv_front:
+            sorted_hes = []
+            for he in cross_he.traverse():
+                if he in inv_front[cross_he]:
+                    sorted_hes.append(inv_front[cross_he][he])
+                    break
+            insert_nodes[cross_he] = sorted_hes[::-1]
+
+        # remove dulplicate half edge
+
+        for cross_he in list(insert_nodes.keys()):
+            if cross_he in insert_nodes and cross_he.twin in insert_nodes:
+                insert_nodes[cross_he] += insert_nodes.pop(cross_he.twin)
+
+        for cross_he, extend_nodes_id in insert_nodes.items():
+            l, v = cross_he.get_points()
+
+            self.planar.G.remove_edge(l, v)
+            for i, (extend_node_id, direction) in enumerate(extend_nodes_id):
+                # process G
+                dummy_node_id = ("dummy", (cross_he.id, i))
+                self.planar.G.add_edge(l, dummy_node_id)
+                self.planar.G.add_edge(dummy_node_id, extend_node_id)
+
+                # # process dcel
+                face = self.planar.dcel.half_edges[l, v].inc
+                self.planar.dcel.add_node_between(l, dummy_node_id, v)
+                assert (extend_node_id, dummy_node_id) not in self.planar.dcel.half_edges
+                self.planar.dcel.connect(face, extend_node_id, dummy_node_id)
+
+
+                # preprocess flow_dict
+                he_e2d = self.planar.dcel.half_edges[extend_node_id, dummy_node_id]
+                lf, rf = he_e2d.twin.inc, he_e2d.inc
+
+                # init
+                self.flow_dict[lf.id] = {}
+                self.flow_dict[rf.id] = {}
+                self.flow_dict[dummy_node_id] = {}
+
+                for f1, f2 in ((lf, rf), (rf, lf)):
+                    # f2f
+                    for f in f1.surround_faces():
+                        if f is not f2:
+                            self.flow_dict[f1.id][f.id] = self.flow_dict[face.id][f.id]
+                            self.flow_dict[f.id][f1.id] = self.flow_dict[f.id][face.id]
+                        self.flow_dict[f1.id][f2.id] = {
+                            he_e2d.id: 0} if f1 is lf else {he_e2d.twin.id: 0}
+
+                    # v2f
+                    for v in f1.surround_vertices():
+                        if v.id == extend_node_id:
+                            self.flow_dict[v.id][f1.id] = {he_e2d.id: 1 if direction == 1 else 2} if f1 is lf else \
+                            {he_e2d.id: 2 if direction == 1 else 1}
+                        elif v.id == dummy_node_id:
+                            self.flow_dict[v.id][f1.id] = {he_e2d.twin.id: 1}
+                        else:
+                            self.flow_dict[v.id][f1.id] = self.flow_dict[v.id][face.id]
+            # debug code
+            # print("v of lf")
+            # for v in lf.surround_vertices():
+            #     print(v.id)
+            # print("v of rf")
+            # for v in rf.surround_vertices():
+            #     print(v.id)
+            # print('v of face')
+            # for v in face.surround_vertices():
+            #     print(v.id)
+            # clear face.id in flow_dict
+
+
+                l = dummy_node_id
+            self.planar.G.add_edge(l, v)
+
+
     def face_side_processor(self):
         '''Associating edges with face sides.
         '''
@@ -74,6 +176,7 @@ class Compaction:
                 halfedge_side[he] = (halfedge_side[he] + base) % 4
 
         halfedge_side = {}
+        # clockwise 0 -> 1 -> 2 -> 3
         for face in self.planar.dcel.faces.values():
             # set edges' side in internal faces independently at first
             side = 0

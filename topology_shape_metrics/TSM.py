@@ -31,7 +31,7 @@ class TSM:
         bend_nodes = {node for node in self.G.nodes if type(node) == tuple and node[0] == 'bend'}
 
         draw_nodes_kwds = {'G': self.G, 'pos': self.pos, 'node_size': 15, "edgecolors": 'black'}
-
+        # all nodes
         nx.draw_networkx_nodes(node_color='white', **draw_nodes_kwds)
         # bend nodes(dummy nodes, not exist in original graph)
         nx.draw_networkx_nodes(nodelist=bend_nodes, node_color='grey', **draw_nodes_kwds)

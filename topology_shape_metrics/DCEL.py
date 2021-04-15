@@ -31,7 +31,7 @@ class HalfEdge:
             he = he.succ
 
     def __repr__(self) -> str:
-        return str(self.id)
+        return f'{self.id}:{self.inc}'
 
 
     def __hash__(self):
@@ -59,6 +59,9 @@ class Vertex:
             if he.inc is face:
                 return he
         return None
+
+    def __repr__(self) -> str:
+        return f'{self.id}:{self.inc.id}'
 
     def __hash__(self):
         return hash(self.id)
@@ -164,6 +167,10 @@ class Dcel:
             self.half_edges[v2, v1].twin = self.half_edges[v1, v2]
 
     def connect(self, face, u, v): # u, v in same face
+        print('called', face, u, v)
+        assert u in [v.id for v in face.surround_vertices()], (face, self.vertices[u].inc.inc)
+        assert v in [v.id for v in face.surround_vertices()], (v, face)
+
         def insert_halfedge(u, v, f, prev_he, succ_he):
             he = HalfEdge((u, v))
             self.half_edges[u, v] = he
