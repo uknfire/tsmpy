@@ -1,5 +1,7 @@
 import networkx as nx
 from topology_shape_metrics.TSM import TSM
+from topology_shape_metrics.utils import convert_pos_to_embedding
+from topology_shape_metrics.DCEL import Dcel
 import unittest
 from matplotlib import pyplot as plt
 
@@ -59,6 +61,31 @@ class TestGrid(unittest.TestCase):
     def test_07(self):
         TestGrid._test_grid(9, 9)
 
+
+class TestDCEL(unittest.TestCase):
+    def test01(self):
+        e = [(0, 1), (1, 2), (2, 0)]
+        G = nx.Graph(e)
+        pos = {0: (0, 0), 1: (1, 0), 2: (0, 1)}
+        embedding = convert_pos_to_embedding(G, pos)
+        dcel = Dcel(G, embedding)
+        dcel.add_node_between(1, 3, 2)
+        dcel.connect(dcel.faces[('face', 1)], 0, 3)
+        dcel.add_node_between(2, 4, 3)
+        dcel.connect(dcel.faces[('face', 1, 'left')], 0, 4)
+        dcel.add_node_between(4, 5, 3)
+        dcel.connect(dcel.faces[('face', 1, 'left', 'right')], 0, 5)
+
+    def test02(self):
+        e = [(0, 1), (1, 2), (2, 3), (3, 0)]
+        G = nx.Graph(e)
+        pos = {0: (0, 0), 1: (1, 0), 2: (2, 0), 3: (3, 0)}
+        embedding = convert_pos_to_embedding(G, pos)
+        dcel = Dcel(G, embedding)
+        dcel.add_node_between(0, 4, 3)
+        dcel.connect(dcel.faces[('face', 1)], 1, 4)
+        dcel.add_node_between(4, 5, 3)
+        dcel.connect(dcel.faces[('face', 1, 'right')], 2, 5)
 
 if __name__ == '__main__':
     res = unittest.main(verbosity=3, exit=False)
