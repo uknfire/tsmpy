@@ -21,10 +21,10 @@ tsm.display()
 plt.savefig("test/outputs/case1.nolp.svg")
 ```
 
-# An example of results
+# An example of results(case2)
 |not use lp | use lp|
 |---|---|
-|![not use lp](https://raw.githubusercontent.com/rawfh/orthogonal-drawing-algorithm/master/test/outputs/case1.nolp.svg)|![not use lp](https://raw.githubusercontent.com/rawfh/orthogonal-drawing-algorithm/master/test/outputs/case1.lp.svg)|
+|![not use lp](https://raw.githubusercontent.com/rawfh/orthogonal-drawing-algorithm/master/test/outputs/case2.nolp.svg)|![not use lp](https://raw.githubusercontent.com/rawfh/orthogonal-drawing-algorithm/master/test/outputs/case2.lp.svg)|
 
 # Requirements for input graph
 * Planar
