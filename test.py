@@ -32,6 +32,7 @@ class TestGML(unittest.TestCase):
         tsm.display()
         plt.savefig(gml_filename.replace(
             "inputs", "outputs").replace(".gml", ".lp.svg"))
+        plt.close()
 
     def test_01(self):
         TestGML._test("test/inputs/case1.gml")
