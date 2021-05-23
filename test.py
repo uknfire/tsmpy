@@ -19,6 +19,15 @@ class TestGML(unittest.TestCase):
         plt.savefig(gml_filename.replace(
             "inputs", "outputs").replace(".gml", ".nolp.svg"))
 
+    def _test_lp(gml_filename):
+        G = nx.Graph(nx.read_gml(gml_filename))
+        pos = {node: eval(node) for node in G}
+
+        # shortify node name
+        node_dict = {v: i for i, v in enumerate(pos)}
+        G = nx.Graph([node_dict[u], node_dict[v]] for u, v in G.edges)
+        pos = {node_dict[k]: v for k, v in pos.items()}
+
         tsm = TSM(G, pos, checkit=False, uselp=True)
         tsm.display()
         plt.savefig(gml_filename.replace(
@@ -26,15 +35,19 @@ class TestGML(unittest.TestCase):
 
     def test_01(self):
         TestGML._test("test/inputs/case1.gml")
+        TestGML._test_lp("test/inputs/case1.gml")
 
     def test_02(self):
         TestGML._test("test/inputs/case2.gml")
+        TestGML._test_lp("test/inputs/case2.gml")
 
     def test_03(self):
         TestGML._test("test/inputs/case3.gml")
+        TestGML._test_lp("test/inputs/case3.gml")
 
     def test_04(self):
         TestGML._test("test/inputs/case4.gml")
+        TestGML._test_lp("test/inputs/case4.gml")
 
 
 class TestGrid(unittest.TestCase):
