@@ -1,8 +1,7 @@
 """DCEL means Doubly connected edge list(also known as half-edge data structure).
 It is a data structure to represent an embedding of a planar graph in the plane
 """
-
-import networkx as nx
+from pprint import pprint
 
 class HalfEdge:
     def __init__(self, name):
@@ -12,6 +11,9 @@ class HalfEdge:
         self.ori  = None
         self.prev = None
         self.succ = None
+
+    def print(self):
+        pprint(vars(self))
 
     def get_points(self):
         return self.ori.id, self.twin.ori.id
@@ -31,7 +33,7 @@ class HalfEdge:
             he = he.succ
 
     def __repr__(self) -> str:
-        return f'{self.id}:{self.inc}'
+        return f'{self.id}'
 
 
     def __hash__(self):
@@ -45,7 +47,6 @@ class Vertex:
     def surround_faces(self): # clockwise, duplicated
         for he in self.surround_half_edges():
             yield he.inc
-
 
     def surround_half_edges(self): # clockwise
         yield self.inc
@@ -61,10 +62,13 @@ class Vertex:
         return None
 
     def __repr__(self) -> str:
-        return f'{self.id}:{self.inc.id}'
+        return f'{self.id}'
 
     def __hash__(self):
         return hash(self.id)
+
+    def print(self):
+        pprint(vars(self))
 
 class Face:
     def __init__(self, name):
@@ -91,6 +95,9 @@ class Face:
 
     def __hash__(self):
         return hash(self.id)
+
+    def print(self):
+        pprint(vars(self))
 
 class Dcel:
     def __init__(self, G, embedding):
@@ -127,8 +134,8 @@ class Dcel:
                 face.inc = he
                 self.faces[face_id] = face
 
-                face.nodes_id = embedding.traverse_face(*he.get_points())
-                for v1_id, v2_id in zip(face.nodes_id, face.nodes_id[1:]+face.nodes_id[:1]):
+                nodes_id = embedding.traverse_face(*he.get_points())
+                for v1_id, v2_id in zip(nodes_id, nodes_id[1:]+nodes_id[:1]):
                     other = self.half_edges[v1_id, v2_id]
                     assert not other.inc
                     other.inc = face
@@ -167,7 +174,6 @@ class Dcel:
             self.half_edges[v2, v1].twin = self.half_edges[v1, v2]
 
     def connect(self, face, u, v): # u, v in same face
-        print('called', face, u, v)
         assert u in [v.id for v in face.surround_vertices()], (face, self.vertices[u].inc.inc)
         assert v in [v.id for v in face.surround_vertices()], (v, face)
 
@@ -182,8 +188,10 @@ class Dcel:
             for h in he.traverse():
                 h.inc = f
 
-        face_l = Face(('face', *face.id[1:], 'left'))
-        face_r = Face(('face', *face.id[1:], 'right'))
+        face_l = Face(('face', *face.id[1:], 'l'))
+        face_r = Face(('face', *face.id[1:], 'r'))
+        face_l.is_external = face.is_external
+        face_r.is_external = face.is_external
         prev_he_u = self.vertices[u].get_half_edge(face).prev
         succ_he_v = self.vertices[v].get_half_edge(face)
         prev_he_v = self.vertices[v].get_half_edge(face).prev
@@ -194,3 +202,10 @@ class Dcel:
         self.half_edges[u, v].twin = self.half_edges[v, u]
         self.half_edges[v, u].twin = self.half_edges[u, v]
         self.faces.pop(face.id)
+    def print(self):
+        for map, name in zip((self.vertices, self.half_edges, self.faces), ('v', 'he', 'face')):
+            print(name)
+            for obj in map.values():
+                obj.print()
+
+
