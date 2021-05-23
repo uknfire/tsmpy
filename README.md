@@ -44,3 +44,4 @@ plt.savefig("test/outputs/case1.nolp.svg")
 * Cleaner code
 * More comments
 * Fix overlay
+* Support node degree > 4

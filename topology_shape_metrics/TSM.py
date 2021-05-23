@@ -19,7 +19,7 @@ class TSM:
         compa = Compaction(ortho)
 
         # self.G != G, it may include additional bend nodes
-        self.G = compa.planar.G
+        self.G = compa.G
         self.pos = compa.pos
 
     def postcheck(self):
