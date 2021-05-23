@@ -212,54 +212,52 @@ class Compaction:
 
     def tidy_rectangle_compaction(self, halfedge_side):
         '''
-        Doing the compaction of TSM algorithm.
-        Compute every edge's length, and store them in self.planar.G.edges[u, v]['len']
+        Compute every edge's length, depending on halfedge_side
         '''
         def build_flow(target_side):
-            hv_flow = Flow_net()
+            flow = Flow_net()
             for he, side in halfedge_side.items():
                 if side == target_side:
                     lf, rf = he.twin.inc, he.inc
                     lf_id = lf.id
                     rf_id = rf.id if not rf.is_external else ('face', 'end')
-                    hv_flow.add_edge(lf_id, rf_id, he.id)
-            return hv_flow
+                    flow.add_edge(lf_id, rf_id, he.id)
+            return flow
 
-        def solve(hv_flow, source, sink):
-            if not hv_flow:
+        def min_cost_flow(flow, source, sink): # sovle what?
+            if not flow:
                 return {}
-            for node in hv_flow:
-                hv_flow.nodes[node]['demand'] = 0
-            hv_flow.nodes[source]['demand'] = -2**32
-            hv_flow.nodes[sink]['demand'] = 2**32
-            for lf_id, rf_id, he_id in hv_flow.edges:
+            for node in flow:
+                flow.nodes[node]['demand'] = 0
+            flow.nodes[source]['demand'] = -2**32
+            flow.nodes[sink]['demand'] = 2**32
+            for lf_id, rf_id, he_id in flow.edges:
                 # what if selfloop?
-                hv_flow.edges[lf_id, rf_id, he_id]['weight'] = 1
-                hv_flow.edges[lf_id, rf_id, he_id]['lowerbound'] = 1
-                hv_flow.edges[lf_id, rf_id, he_id]['capacity'] = 2**32
-            hv_flow.add_edge(source, sink, 'extend_edge',
+                flow.edges[lf_id, rf_id, he_id]['weight'] = 1
+                flow.edges[lf_id, rf_id, he_id]['lowerbound'] = 1
+                flow.edges[lf_id, rf_id, he_id]['capacity'] = 2**32
+            flow.add_edge(source, sink, 'extend_edge',
                              weight=0, lowerbound=0, capacity=2**32)
 
             # selfloop，avoid inner edge longer than border
-            # for u, _ in hv_flow.selfloop_edges():
-            #     in_nodes = [v for v, _ in hv_flow.in_edges(u)]
+            # for u, _ in flow.selfloop_edges():
+            #     in_nodes = [v for v, _ in flow.in_edges(u)]
             #     assert in_nodes
-            #     delta = sum(hv_flow[v][u]['lowerbound'] for v in in_nodes) - hv_flow[u][u]['count']
+            #     delta = sum(flow[v][u]['lowerbound'] for v in in_nodes) - flow[u][u]['count']
             #     if delta < 0:
-            #         hv_flow.edges[in_nodes[0]][u]['lowerbound'] += -delta
-            return hv_flow.min_cost_flow()
+            #         flow.edges[in_nodes[0]][u]['lowerbound'] += -delta
+            return flow.min_cost_flow()
 
         hor_flow = build_flow(1)  # up -> bottom
         ver_flow = build_flow(0)  # left -> right
 
-        hor_flow_dict = solve(hor_flow, self.planar.ext_face.id, ('face', 'end'))
-        ver_flow_dict = solve(ver_flow, self.planar.ext_face.id, ('face', 'end'))
+        hor_flow_dict = min_cost_flow(hor_flow, self.planar.ext_face.id, ('face', 'end'))
+        ver_flow_dict = min_cost_flow(ver_flow, self.planar.ext_face.id, ('face', 'end'))
 
         halfedge_length = {}
-        for he in self.planar.dcel.half_edges.values():
-            if halfedge_side[he] in (0, 1):
-                side = halfedge_side[he]
 
+        for he, side in halfedge_side.items():
+            if side in (0, 1):
                 rf = he.inc
                 rf_id = ('face', 'end') if rf.is_external else rf.id
                 lf_id = he.twin.inc.id
