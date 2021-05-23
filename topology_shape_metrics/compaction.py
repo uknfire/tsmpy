@@ -20,6 +20,7 @@ class Compaction:
 
         halfedge_length = self.tidy_rectangle_compaction(halfedge_side)
         self.pos = self.layout(halfedge_side, halfedge_length)
+        self.remove_dummy()
 
     def bend_point_processor(self, flow_dict):
         '''Create bend nodes.
@@ -278,5 +279,16 @@ class Compaction:
                             pos[v] = (x, y - length)
                     break
         return pos
+
+    def remove_dummy(self):
+        for node in list(self.G.nodes):
+            if type(node) is tuple and node[0] == "dummy" and len(node) > 1:
+                extend_node_id = node[1]
+                assert len(self.G[node]) == 3
+                u, v = [nb for nb in self.G[node] if nb != extend_node_id]
+                self.G.remove_node(node)
+                self.G.add_edge(u, v)
+                self.pos.pop(node)
+
 
 
