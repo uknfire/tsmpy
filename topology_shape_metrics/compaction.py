@@ -1,34 +1,34 @@
 from copy import deepcopy
 from collections import defaultdict
 from topology_shape_metrics.flownet import Flow_net
-from topology_shape_metrics.planarization import Planarization
-from topology_shape_metrics.orthogonalization import Orthogonalization
-import networkx as nx
-
+from pprint import pprint
 
 class Compaction:
     '''
     Assign minimum lengths to the segments of the edges of the orthogonal representation.
-    Never reverse ortho in this class.
     '''
 
     def __init__(self, ortho):
-        self.planar = ortho.planar.copy()
-        self.flow_dict = deepcopy(ortho.flow_dict)
-        # preprocess
-        self.bend_point_processor()
-        self.refine_faces()
-        halfedge_side = self.face_side_processor()
+        self.planar = ortho.planar.copy() # Try to not modify original G
+        self.G = self.planar.G
+        self.dcel = self.planar.dcel
+
+        flow_dict = deepcopy(ortho.flow_dict)
+        self.bend_point_processor(flow_dict)
+        halfedge_side = self.face_side_processor(flow_dict)
+        self.refine_faces(halfedge_side)
+
         halfedge_length = self.tidy_rectangle_compaction(halfedge_side)
         self.pos = self.layout(halfedge_side, halfedge_length)
 
-    def bend_point_processor(self):
-        '''Create dummy nodes for bends.
+    def bend_point_processor(self, flow_dict):
+        '''Create bend nodes.
+        Modify self.G, self.dcel and flow_dict
         '''
         bends = {}  # left to right
-        for he in self.planar.dcel.half_edges.values():
+        for he in self.dcel.half_edges.values():
             lf, rf = he.twin.inc, he.inc
-            flow = self.flow_dict[lf.id][rf.id][he.id]
+            flow = flow_dict[lf.id][rf.id][he.id]
             if flow > 0:
                 bends[he] = flow
 
@@ -40,28 +40,28 @@ class Compaction:
             u, v = he.get_points()
             lf_id, rf_id = he.twin.inc.id, he.inc.id
 
-            self.planar.G.remove_edge(u, v)
+            self.G.remove_edge(u, v)
             # use ('bend', idx) to represent bend node
-            self.flow_dict[u][rf_id][u,
-                                        ('bend', idx)] = self.flow_dict[u][rf_id].pop((u, v))
+            flow_dict[u][rf_id][u,
+                                        ('bend', idx)] = flow_dict[u][rf_id].pop((u, v))
 
             for i in range(num_bends):
                 cur_node = ('bend', idx)
                 pre_node = ('bend', idx-1) if i > 0 else u
                 nxt_node = ('bend', idx+1) if i < num_bends - 1 else v
-                self.planar.G.add_edge(pre_node, cur_node)
-                self.planar.dcel.add_node_between(
+                self.G.add_edge(pre_node, cur_node)
+                self.dcel.add_node_between(
                     pre_node, cur_node, v
                 )
-                self.flow_dict.setdefault(cur_node, {}).setdefault(
+                flow_dict.setdefault(cur_node, {}).setdefault(
                     lf_id, {})[cur_node, pre_node] = 1
-                self.flow_dict.setdefault(cur_node, {}).setdefault(
+                flow_dict.setdefault(cur_node, {}).setdefault(
                     rf_id, {})[cur_node, nxt_node] = 3
                 idx += 1
 
-            self.flow_dict[v][lf_id][v,
-                                     ('bend', idx-1)] = self.flow_dict[v][lf_id].pop((v, u))
-            self.planar.G.add_edge(('bend', idx-1), v)
+            flow_dict[v][lf_id][v,
+                                     ('bend', idx-1)] = flow_dict[v][lf_id].pop((v, u))
+            self.G.add_edge(('bend', idx-1), v)
 
     def refine_faces(self, halfedge_side):
         '''Make face rectangle, create dummpy nodes
@@ -133,8 +133,6 @@ class Compaction:
                     refine(lf, target)
                     refine(rf, target)
                     break
-    def face_side_processor(self):
-        '''Associating edges with face sides.
         # TODO: refine external face
         for face in list(self.dcel.faces.values()):
             if not face.is_external:
@@ -150,6 +148,8 @@ class Compaction:
 
 
 
+    def face_side_processor(self, flow_dict):
+        '''Assign edges with face sides, depending on flow_dict
         '''
 
         def update_face_edge(halfedge_side, face, base):
@@ -158,12 +158,12 @@ class Compaction:
 
         halfedge_side = {}
         # clockwise 0 -> 1 -> 2 -> 3
-        for face in self.planar.dcel.faces.values():
+        for face in self.dcel.faces.values():
             # set edges' side in internal faces independently at first
             side = 0
             for he in face.surround_half_edges():
                 halfedge_side[he] = side
-                end_angle = self.flow_dict[he.succ.ori.id][face.id][he.succ.id]
+                end_angle = flow_dict[he.succ.ori.id][face.id][he.succ.id]
                 if end_angle == 1:
                     # turn right in internal face or turn left in external face
                     side = (side + 1) % 4
@@ -255,6 +255,8 @@ class Compaction:
         return halfedge_length
 
     def layout(self, halfedge_side, halfedge_length):
+        ''' return pos of self.G
+        '''
         pos = {}
         for face in self.planar.dfs_face_order():
             for start_he in face.surround_half_edges():
