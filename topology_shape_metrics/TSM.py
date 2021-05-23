@@ -68,3 +68,7 @@ class TSM:
         else:
             if number_of_cross(G, pos) > 0:
                 raise Exception("There are cross edges in pos")
+
+        for node in G.nodes:
+            if type(node) is tuple and node[0] in ("dummy", "bend") and len(node) > 1:
+                raise Exception(f"Invalid node name: {node}")
