@@ -10,6 +10,10 @@ class TestGML(unittest.TestCase):
         G = nx.Graph(nx.read_gml(gml_filename))
         pos = {node: eval(node) for node in G}
 
+        # shortify node name
+        node_dict = {v: i for i, v in enumerate(pos)}
+        G = nx.Graph([node_dict[u], node_dict[v]] for u, v in G.edges)
+        pos = {node_dict[k]: v for k, v in pos.items()}
         tsm = TSM(G, pos)
         tsm.display()
         plt.savefig(gml_filename.replace(
