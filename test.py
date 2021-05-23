@@ -5,6 +5,30 @@ from topology_shape_metrics.DCEL import Dcel
 import unittest
 from matplotlib import pyplot as plt
 
+class TestRefine(unittest.TestCase):
+    def test(gml_filename): # 凸
+        e = [(i, i + 1) for i in range(7)] + [(7, 0)]
+        G = nx.Graph(e)
+        pos = {0: (0, 0), 1: (0, 1), 2: (1, 1), 3: (1, 2),
+            4: (2, 2), 5: (2, 1), 6: (3, 1), 7: (3, 0)}
+
+        tsm = TSM(G, pos)
+        tsm.display()
+        plt.savefig("test/outputs/refine1.svg")
+        plt.close()
+
+    def test2(gml_filename): # 十
+        e = [(i, i + 1) for i in range(11)] + [(11, 0)]
+        G = nx.Graph(e)
+        pos = {0: (0, 0), 1: (0, 1), 2: (1, 1), 3: (1, 2),
+            4: (2, 2), 5: (2, 1), 6: (3, 1), 7: (3, 0),
+            8: (2, 0), 9: (2, -1), 10: (1, -1), 11: (1, 0),
+            }
+        tsm = TSM(G, pos)
+        tsm.display()
+        plt.savefig("test/outputs/refin2.svg")
+        plt.close()
+
 class TestGML(unittest.TestCase):
     def _test(gml_filename):
         G = nx.Graph(nx.read_gml(gml_filename))
