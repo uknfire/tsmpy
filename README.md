@@ -11,14 +11,15 @@ import networkx as nx
 from topology_shape_metrics.TSM import TSM
 from matplotlib import pyplot as plt
 
-G = nx.Graph(nx.read_gml("test/inputs/case1.gml")) # a nx.Graph object
-pos = {node: eval(node) for node in G} # initial layout, optional, will be converted to a embedding
+G = nx.Graph(nx.read_gml("test/inputs/case2.gml")) # a nx.Graph object
+pos = {node: eval(node) for node in G}
+# initial layout, optional, will be converted to an embedding
 # if pos is None, embedding is given by nx.check_planarity
 
 tsm = TSM(G, pos)  # use nx.min_cost_flow to solve minimum cost flow program
 # tsm = TSM(G, pos, uselp=True) # use linear programming to solve minimum cost flow program
 tsm.display()
-plt.savefig("test/outputs/case1.nolp.svg")
+plt.savefig("test/outputs/case2.nolp.svg")
 ```
 
 # An example of results(case2)
