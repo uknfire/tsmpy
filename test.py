@@ -81,7 +81,6 @@ class TestGrid(unittest.TestCase):
 
 
 class TestDCEL(unittest.TestCase):
-    def test01(self):
         e = [(0, 1), (1, 2), (2, 0)]
         G = nx.Graph(e)
         pos = {0: (0, 0), 1: (1, 0), 2: (0, 1)}
@@ -89,10 +88,10 @@ class TestDCEL(unittest.TestCase):
         dcel = Dcel(G, embedding)
         dcel.add_node_between(1, 3, 2)
         dcel.connect(dcel.faces[('face', 1)], 0, 3)
-        dcel.add_node_between(2, 4, 3)
-        dcel.connect(dcel.faces[('face', 1, 'left')], 0, 4)
-        dcel.add_node_between(4, 5, 3)
-        dcel.connect(dcel.faces[('face', 1, 'left', 'right')], 0, 5)
+        assert dcel.half_edges[2, 3].succ.id == (3, 0)
+        assert dcel.half_edges[3, 0].prev.id == (2, 3)
+        assert dcel.half_edges[3, 0].succ.id == (0, 2)
+        assert dcel.half_edges[0, 2].prev.id == (3, 0)
 
     def test02(self):
         e = [(0, 1), (1, 2), (2, 3), (3, 0)]
