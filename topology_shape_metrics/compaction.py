@@ -74,18 +74,17 @@ class Compaction:
             cnt = 0
             while cnt != target:
                 side, next_side = halfedge_side[he], halfedge_side[he.succ]
-                # TODO: what if 360 degree
-                if side == next_side:
+                if side == next_side: # go straight
                     pass
-                elif (side + 1) % 4 == next_side:
+                elif (side + 1) % 4 == next_side: # go right
                     cnt += 1
-                elif (side + 2) % 4 == next_side:
+                elif (side + 2) % 4 == next_side: # go back
                     cnt -= 2
-                else:
+                else: # go left
                     cnt -= 1
                 he = he.succ
                 if he is init_he:
-                    raise Exception("not find front edge")
+                    raise Exception("can't find front edge")
             return he
 
         def refine(face, target): # insert only one edge to make face more rect, internal
