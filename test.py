@@ -39,31 +39,32 @@ class TestGML(unittest.TestCase):
         G = nx.Graph([node_dict[u], node_dict[v]] for u, v in G.edges)
         pos = {node_dict[k]: v for k, v in pos.items()}
 
-        tsm = TSM(G, pos)
+        tsm = TSM(G, pos, checkit=False, uselp=uselp)
         tsm.display()
         plt.savefig(gml_filename.replace(
             "inputs", "outputs").replace(".gml", f".{'lp' if uselp else 'nolp'}.svg"))
         plt.close()
 
 
-    def test_04(self): # no cut edge, convex
+    def test_4_nocut(self): # no cut edge
         TestGML._test("test/inputs/case4.gml")
         TestGML._test("test/inputs/case4.gml", uselp=True)
 
-    def test_02(self):  # no cut edge, convex
+    def test_2_nocut(self):  # no cut edge
         TestGML._test("test/inputs/case2.gml")
         TestGML._test("test/inputs/case2.gml", uselp=True)
 
-    def test_01(self): # inner face has no cutedge
+    def test_5_1cut(self):  # no cut edge
+        TestGML._test("test/inputs/case5.gml")
+        # TestGML._test("test/inputs/case5.gml", uselp=True)
+
+    def test_1_cut_ext(self): # inner face has no cutedge
         TestGML._test("test/inputs/case1.gml")
         TestGML._test("test/inputs/case1.gml", uselp=True)
 
-    def test_03(self): # inner face has cutedge (most difficult)
+    def test_3_cut_both(self): # inner face has cutedge (most difficult)
         TestGML._test("test/inputs/case3.gml")
         TestGML._test("test/inputs/case3.gml", uselp=True)
-
-
-
 
 
 class TestGrid(unittest.TestCase):
