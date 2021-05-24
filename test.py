@@ -73,26 +73,23 @@ class TestGrid(unittest.TestCase):
         TSM(G, pos)
         TSM(G)
 
-    def test_01(self):
+    def test_1x2(self):
         TestGrid._test_grid(1, 2)
 
-    def test_02(self):
+    def test_2x1(self):
         TestGrid._test_grid(2, 1)
 
-    def test_03(self):
+    def test_1x5(self):
         TestGrid._test_grid(1, 5)
 
-    def test_04(self):
+    def test_5x1(self):
         TestGrid._test_grid(5, 1)
 
-    def test_05(self):
+    def test_5x5(self):
         TestGrid._test_grid(5, 5)
 
-    def test_06(self):
+    def test_3x3(self):
         TestGrid._test_grid(3, 3)
-
-    def test_07(self):
-        TestGrid._test_grid(9, 9)
 
 
 class TestDCEL(unittest.TestCase):
