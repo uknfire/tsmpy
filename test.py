@@ -30,7 +30,7 @@ class TestRefine(unittest.TestCase):
         plt.close()
 
 class TestGML(unittest.TestCase):
-    def _test(gml_filename):
+    def _test(gml_filename, uselp=False):
         G = nx.Graph(nx.read_gml(gml_filename))
         pos = {node: eval(node) for node in G}
 
@@ -38,42 +38,32 @@ class TestGML(unittest.TestCase):
         node_dict = {v: i for i, v in enumerate(pos)}
         G = nx.Graph([node_dict[u], node_dict[v]] for u, v in G.edges)
         pos = {node_dict[k]: v for k, v in pos.items()}
+
         tsm = TSM(G, pos)
         tsm.display()
         plt.savefig(gml_filename.replace(
-            "inputs", "outputs").replace(".gml", ".nolp.svg"))
+            "inputs", "outputs").replace(".gml", f".{'lp' if uselp else 'nolp'}.svg"))
         plt.close()
 
-    def _test_lp(gml_filename):
-        G = nx.Graph(nx.read_gml(gml_filename))
-        pos = {node: eval(node) for node in G}
 
-        # shortify node name
-        node_dict = {v: i for i, v in enumerate(pos)}
-        G = nx.Graph([node_dict[u], node_dict[v]] for u, v in G.edges)
-        pos = {node_dict[k]: v for k, v in pos.items()}
-
-        tsm = TSM(G, pos, checkit=False, uselp=True)
-        tsm.display()
-        plt.savefig(gml_filename.replace(
-            "inputs", "outputs").replace(".gml", ".lp.svg"))
-        plt.close()
-
-    def test_01(self):
-        TestGML._test("test/inputs/case1.gml")
-        TestGML._test_lp("test/inputs/case1.gml")
-
-    def test_02(self):
-        TestGML._test("test/inputs/case2.gml")
-        TestGML._test_lp("test/inputs/case2.gml")
-
-    def test_03(self):
-        TestGML._test("test/inputs/case3.gml")
-        TestGML._test_lp("test/inputs/case3.gml")
-
-    def test_04(self):
+    def test_04(self): # no cut edge, convex
         TestGML._test("test/inputs/case4.gml")
-        TestGML._test_lp("test/inputs/case4.gml")
+        TestGML._test("test/inputs/case4.gml", uselp=True)
+
+    def test_02(self):  # no cut edge, convex
+        TestGML._test("test/inputs/case2.gml")
+        TestGML._test("test/inputs/case2.gml", uselp=True)
+
+    def test_01(self): # inner face has no cutedge
+        TestGML._test("test/inputs/case1.gml")
+        TestGML._test("test/inputs/case1.gml", uselp=True)
+
+    def test_03(self): # inner face has cutedge (most difficult)
+        TestGML._test("test/inputs/case3.gml")
+        TestGML._test("test/inputs/case3.gml", uselp=True)
+
+
+
 
 
 class TestGrid(unittest.TestCase):
