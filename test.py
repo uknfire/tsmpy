@@ -128,7 +128,7 @@ class TestDCEL(unittest.TestCase):
         dcel.add_node_between(0, 4, 3)
         dcel.connect(dcel.faces[('face', 1)], 1, 4)
         dcel.add_node_between(4, 5, 3)
-        dcel.connect(dcel.faces[('face', 1, 'right')], 2, 5)
+        dcel.connect(dcel.faces[('face', 1, 'r')], 2, 5)
 
 if __name__ == '__main__':
     res = unittest.main(verbosity=3, exit=False)
