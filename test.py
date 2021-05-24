@@ -42,6 +42,7 @@ class TestGML(unittest.TestCase):
         tsm.display()
         plt.savefig(gml_filename.replace(
             "inputs", "outputs").replace(".gml", ".nolp.svg"))
+        plt.close()
 
     def _test_lp(gml_filename):
         G = nx.Graph(nx.read_gml(gml_filename))
