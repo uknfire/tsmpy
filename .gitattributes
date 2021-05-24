@@ -1,1 +1,2 @@
-test/* linguist-generated
+*.gml linguist-generated
+*.svg linguist-generated
