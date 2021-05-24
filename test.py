@@ -106,6 +106,7 @@ class TestGrid(unittest.TestCase):
 
 
 class TestDCEL(unittest.TestCase):
+    def test_add_node_between(self):
         e = [(0, 1), (1, 2), (2, 0)]
         G = nx.Graph(e)
         pos = {0: (0, 0), 1: (1, 0), 2: (0, 1)}
