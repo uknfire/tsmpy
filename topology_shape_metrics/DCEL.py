@@ -106,6 +106,7 @@ class Dcel:
         self.vertices = {}
         self.half_edges = {}
         self.faces = {}
+        self.ext_face = None
 
         for node in G.nodes:
             self.vertices[node] = Vertex(node)
@@ -190,8 +191,9 @@ class Dcel:
 
         face_l = Face(('face', *face.id[1:], 'l'))
         face_r = Face(('face', *face.id[1:], 'r'))
-        face_l.is_external = face.is_external
-        face_r.is_external = face.is_external
+        if face.is_external:
+            face_r.is_external = True
+            self.ext_face = face_r
         prev_he_u = self.vertices[u].get_half_edge(face).prev
         succ_he_v = self.vertices[v].get_half_edge(face)
         prev_he_v = self.vertices[v].get_half_edge(face).prev

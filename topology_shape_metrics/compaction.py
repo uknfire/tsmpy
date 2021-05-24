@@ -264,8 +264,8 @@ class Compaction:
         hor_flow = build_flow(1)  # up -> bottom
         ver_flow = build_flow(0)  # left -> right
 
-        hor_flow_dict = min_cost_flow(hor_flow, self.planar.ext_face.id, ('face', 'end'))
-        ver_flow_dict = min_cost_flow(ver_flow, self.planar.ext_face.id, ('face', 'end'))
+        hor_flow_dict = min_cost_flow(hor_flow, self.dcel.ext_face.id, ('face', 'end'))
+        ver_flow_dict = min_cost_flow(ver_flow, self.dcel.ext_face.id, ('face', 'end'))
 
         halfedge_length = {}
 

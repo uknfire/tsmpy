@@ -15,8 +15,8 @@ class Planarization:
         self.G = G
         self.pos = pos  # is only used to find the ext_face now.
         self.dcel = Dcel(G, embedding)
-        self.ext_face = self.get_external_face()
-        self.ext_face.is_external = True
+        self.dcel.ext_face = self.get_external_face()
+        self.dcel.ext_face.is_external = True
 
     def copy(self):
         new_planar = self.__new__(self.__class__)
@@ -51,5 +51,5 @@ class Planarization:
             for nb in set(face.surround_faces()):
                 if nb.id not in marked:
                     dfs(nb)
-        dfs(self.ext_face)
+        dfs(self.dcel.ext_face)
         return res
