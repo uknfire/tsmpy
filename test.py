@@ -4,6 +4,7 @@ from topology_shape_metrics.utils import convert_pos_to_embedding
 from topology_shape_metrics.DCEL import Dcel
 import unittest
 from matplotlib import pyplot as plt
+from pprint import pprint
 
 class TestRefine(unittest.TestCase):
     def test(gml_filename): # 凸
@@ -26,6 +27,7 @@ class TestRefine(unittest.TestCase):
             }
         tsm = TSM(G, pos)
         tsm.display()
+
         plt.savefig("test/outputs/refin2.svg")
         plt.close()
 
@@ -54,15 +56,15 @@ class TestGML(unittest.TestCase):
         TestGML._test("test/inputs/case2.gml")
         TestGML._test("test/inputs/case2.gml", uselp=True)
 
-    def test_5_1cut(self):  # no cut edge
+    def test_5_1cut(self):  # a small graph, has two cut-edges
         TestGML._test("test/inputs/case5.gml")
-        # TestGML._test("test/inputs/case5.gml", uselp=True)
+        TestGML._test("test/inputs/case5.gml", uselp=True)
 
-    def test_1_cut_ext(self): # inner face has no cutedge
+    def test_1_cut_ext(self): # external face has cut-edges
         TestGML._test("test/inputs/case1.gml")
         TestGML._test("test/inputs/case1.gml", uselp=True)
 
-    def test_3_cut_both(self): # inner face has cutedge (most difficult)
+    def test_3_cut_both(self): # inner face has cut-edges (most difficult)
         TestGML._test("test/inputs/case3.gml")
         TestGML._test("test/inputs/case3.gml", uselp=True)
 
