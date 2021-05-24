@@ -135,36 +135,7 @@ class Compaction:
                     refine(rf, target)
                     break
 
-        def build_border(G, dcel):
-            # create border dcel
-            border_nodes = [("dummy", -i) for i in range(1, 5)]
-            border_edges = [(border_nodes[i], border_nodes[(i + 1) % 4]) for i in range(4)]
-            border_G = nx.Graph(border_edges)
 
-            is_planar, border_embedding = nx.check_planarity(border_G)
-            border_dcel = Dcel(border_G, border_embedding)
-
-            for face in list(border_dcel.faces().values()):
-                if not face.is_external:
-                    for he in face.surround_halfedges():
-                        he.inc = self.planar.ext_face
-                    border_dcel.faces.pop(face.id)
-                    border_dcel.faces[self.planar.ext_face.id] = self.planar.ext_face
-                else:
-                    # rename border_dcel.ext_face's name
-                    border_dcel.faces.pop(face.id)
-                    face.id = ("face", -1)
-                    border_dcel.faces[face.id] = face
-
-
-            G.add_edges(border_edges)
-
-            # merge border dcel into self.dcel
-            dcel.vertices.update(border_dcel.vertices)
-            dcel.half_edges.update(border_dcel.half_edges)
-            dcel.faces.update(border_dcel.faces)
-
-        build_border(self.G, self.dcel)
         # TODO: refine external face
         for face in list(self.dcel.faces.values()):
             if not face.is_external:
