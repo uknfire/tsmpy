@@ -34,11 +34,12 @@ plt.savefig("test/outputs/case2.nolp.svg")
 * No selfloop
 
 # Features
-* Using linear programing to solve minimum-cost flow problem
+* Using linear programing to solve minimum-cost flow problem, to reduce number of bends
 
 # Existing problems
 * Edge overlays and crossings in output
 * Node overlaps in output
+* May throw exception if the graph has cut-edges
 
 
 # TODO
@@ -46,3 +47,4 @@ plt.savefig("test/outputs/case2.nolp.svg")
 * More comments
 * Fix overlay
 * Support node degree > 4
+* Support cut-edges
