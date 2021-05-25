@@ -28,7 +28,7 @@ class TestRefine(unittest.TestCase):
         tsm = TSM(G, pos)
         tsm.display()
 
-        plt.savefig("test/outputs/refin2.svg")
+        plt.savefig("test/outputs/refine2.svg")
         plt.close()
 
 class TestGML(unittest.TestCase):
@@ -56,13 +56,21 @@ class TestGML(unittest.TestCase):
         TestGML._test("test/inputs/case2.gml")
         TestGML._test("test/inputs/case2.gml", uselp=True)
 
-    def test_5_1cut(self):  # a small graph, has two cut-edges
+    def test_5_2cut_external(self):  # a small graph, has two external cut-edges
         TestGML._test("test/inputs/case5.gml")
         TestGML._test("test/inputs/case5.gml", uselp=True)
 
-    def test_1_cut_ext(self): # external face has cut-edges
+    def test_7_1cut_internal(self):  # a small graph, has one internal cut-edge
+        TestGML._test("test/inputs/case7.gml")
+        TestGML._test("test/inputs/case7.gml", uselp=True)
+
+    def test_1_cut_external(self): # external face has cut-edges
         TestGML._test("test/inputs/case1.gml")
         TestGML._test("test/inputs/case1.gml", uselp=True)
+
+    def test_6_cut_internal(self): # internal face has cut-edges
+        TestGML._test("test/inputs/case6.gml")
+        TestGML._test("test/inputs/case6.gml", uselp=True)
 
     def test_3_cut_both(self): # inner face has cut-edges (most difficult)
         TestGML._test("test/inputs/case3.gml")
@@ -119,6 +127,7 @@ class TestDCEL(unittest.TestCase):
         dcel.connect(dcel.faces[('face', 1)], 1, 4)
         dcel.add_node_between(4, 5, 3)
         dcel.connect(dcel.faces[('face', 1, 'r')], 2, 5)
+
 
 if __name__ == '__main__':
     res = unittest.main(verbosity=3, exit=False)
