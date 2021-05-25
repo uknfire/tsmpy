@@ -22,6 +22,19 @@ tsm.display()
 plt.savefig("test/outputs/case2.nolp.svg")
 ```
 
+# Run tests
+```Python
+# show help
+python test.py -h
+
+# run test on case2 and case4, generating svg file in test/outputs
+python test.py TestGML -k nocut
+
+# run all 7 tests in TestGML.
+# note that it fails in 4 tests.(because they have cut-edges)
+python test.py TestGML
+```
+
 # An example of results(case2)
 |not use lp | use lp|
 |---|---|
@@ -32,6 +45,7 @@ plt.savefig("test/outputs/case2.nolp.svg")
 * Connected
 * Max node degree is no more than 4
 * No selfloop
+* No cut edges
 
 # Features
 * Using linear programing to solve minimum-cost flow problem, to reduce number of bends
