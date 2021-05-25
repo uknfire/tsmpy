@@ -70,7 +70,7 @@ class Compaction:
         Modify self.G, self.dcel, halfedge_side
         '''
 
-        def find_front(he, target=1):
+        def find_front(he, target):
             init_he = he
             cnt = 0
             while cnt != target:
@@ -89,21 +89,19 @@ class Compaction:
             return he
 
         def refine(face, target): # insert only one edge to make face more rect, internal
-            # print(prefix + 'refining', face)
-            # assert not face.is_external
-            # print(prefix, {he: halfedge_side[he] for he in face.surround_half_edges()})
-            for he in face.surround_half_edges():  # traverse face
+            for he in face.surround_half_edges():
                 side, next_side = halfedge_side[he], halfedge_side[he.succ]
                 if side != next_side and (side + 1) % 4 != next_side:
-                    front_he = find_front(he, target)
-                    extend_node_id = he.twin.ori.id
-                    # print(prefix, extend_node_id, 'to', front_he)
+                    try:
+                        front_he = find_front(he, target)
+                    except:
+                        continue
 
+                    extend_node_id = he.twin.ori.id
                     l, v = front_he.ori.id, front_he.twin.ori.id
                     he_l2r = self.dcel.half_edges[l, v]
-                    # process G
 
-                    # f'd{extend_node_id}'
+                    # process G
                     dummy_node_id = ("dummy", extend_node_id)
                     self.G.remove_edge(l, v)
                     self.G.add_edge(l, dummy_node_id)
@@ -138,17 +136,7 @@ class Compaction:
 
         # TODO: refine external face
         for face in list(self.dcel.faces.values()):
-            if not face.is_external:
-                refine(face, 1)
-            # else:
-            #     refine(face, -1)
-
-        # for face in list(self.dcel.faces.values()):
-        #     if face.is_external:
-        #         for he in face.surround_half_edges():
-        #             halfedge_side[he] = (halfedge_side[he.twin] + 2) % 4
-        #         break
-
+            refine(face, 1)
 
 
     def face_side_processor(self, flow_dict):
@@ -208,7 +196,7 @@ class Compaction:
                     flow.add_edge(lf_id, rf_id, he.id)
             return flow
 
-        def min_cost_flow(flow, source, sink): # sovle what?
+        def min_cost_flow(flow, source, sink):
             if not flow:
                 return {}
             for node in flow:
@@ -216,7 +204,7 @@ class Compaction:
             flow.nodes[source]['demand'] = -2**32
             flow.nodes[sink]['demand'] = 2**32
             for lf_id, rf_id, he_id in flow.edges:
-                # what if selfloop?
+                # TODO: what if selfloop?
                 flow.edges[lf_id, rf_id, he_id]['weight'] = 1
                 flow.edges[lf_id, rf_id, he_id]['lowerbound'] = 1
                 flow.edges[lf_id, rf_id, he_id]['capacity'] = 2**32
@@ -291,6 +279,3 @@ class Compaction:
                 self.G.remove_node(node)
                 self.G.add_edge(u, v)
                 self.pos.pop(node)
-
-
-
