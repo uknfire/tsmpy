@@ -23,7 +23,7 @@ plt.savefig("test/outputs/case2.nolp.svg")
 ```
 
 # Run tests
-```Python
+```bash
 # show help
 python test.py -h
 
@@ -45,7 +45,6 @@ python test.py TestGML
 * Connected
 * Max node degree is no more than 4
 * No selfloop
-* No cut edges
 
 # Features
 * Using linear programing to solve minimum-cost flow problem, to reduce number of bends
