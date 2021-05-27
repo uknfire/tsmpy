@@ -189,15 +189,29 @@ class Dcel:
             for h in he.traverse():
                 h.inc = f
 
+        def find_all(face, start_id, end_id):
+            for he in face.surround_half_edges():
+                if he.ori.id == start_id:
+                    res = []
+                    for e in he.traverse():
+                        if e.ori.id == end_id:
+                            res.append(e)
+                    return res
+            raise Exception("Not found")
+
+
         face_l = Face(('face', *face.id[1:], 'l'))
         face_r = Face(('face', *face.id[1:], 'r'))
         if face.is_external:
             face_r.is_external = True
             self.ext_face = face_r
-        prev_he_u = self.vertices[u].get_half_edge(face).prev
-        succ_he_v = self.vertices[v].get_half_edge(face)
-        prev_he_v = self.vertices[v].get_half_edge(face).prev
-        succ_he_u = self.vertices[u].get_half_edge(face)
+        # Be careful here
+        hes_u2v = find_all(face, u, v)
+        hes_v2u = find_all(face, v, u)
+        prev_he_u = hes_v2u[-1].prev
+        succ_he_v = hes_u2v[0]
+        prev_he_v = hes_u2v[0].prev
+        succ_he_u = hes_v2u[-1]
 
         insert_halfedge(u, v, face_r, prev_he_u, succ_he_v)
         insert_halfedge(v, u, face_l, prev_he_v, succ_he_u)
