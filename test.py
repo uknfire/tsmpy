@@ -64,6 +64,10 @@ class TestGML(unittest.TestCase):
         TestGML._test("test/inputs/case7.gml")
         TestGML._test("test/inputs/case7.gml", uselp=True)
 
+    def test_8_cut_external(self): # external face has cut-edges, simpler that case1
+        TestGML._test("test/inputs/case8.gml")
+        TestGML._test("test/inputs/case8.gml", uselp=True)
+
     def test_1_cut_external(self): # external face has cut-edges
         TestGML._test("test/inputs/case1.gml")
         TestGML._test("test/inputs/case1.gml", uselp=True)
@@ -101,6 +105,9 @@ class TestGrid(unittest.TestCase):
 
     def test_3x3(self):
         TestGrid._test_grid(3, 3)
+
+    def test_1x99(self):
+        TestGrid._test_grid(1, 99)
 
 
 class TestDCEL(unittest.TestCase):
