@@ -98,24 +98,23 @@ class Compaction:
                         continue
 
                     extend_node_id = he.twin.ori.id
-                    l, v = front_he.ori.id, front_he.twin.ori.id
-                    he_l2r = self.dcel.half_edges[l, v]
-
+                    l, r = front_he.ori.id, front_he.twin.ori.id
+                    he_l2r = self.dcel.half_edges[l, r]
                     # process G
                     dummy_node_id = ("dummy", extend_node_id)
-                    self.G.remove_edge(l, v)
+                    self.G.remove_edge(l, r)
                     self.G.add_edge(l, dummy_node_id)
-                    self.G.add_edge(dummy_node_id, v)
+                    self.G.add_edge(dummy_node_id, r)
                     self.G.add_edge(dummy_node_id, extend_node_id)
 
                     # # process dcel
-                    face = self.dcel.half_edges[l, v].inc
-                    self.dcel.add_node_between(l, dummy_node_id, v)
+                    face = self.dcel.half_edges[l, r].inc
+                    self.dcel.add_node_between(l, dummy_node_id, r)
                     self.dcel.connect(face, extend_node_id, dummy_node_id)
 
                     he_e2d = self.dcel.half_edges[extend_node_id, dummy_node_id]
                     he_l2d = self.dcel.half_edges[l, dummy_node_id]
-                    he_d2r = self.dcel.half_edges[dummy_node_id, v]
+                    he_d2r = self.dcel.half_edges[dummy_node_id, r]
                     lf, rf = he_e2d.twin.inc, he_e2d.inc
 
                     # process halfedge_side
