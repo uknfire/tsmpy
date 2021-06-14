@@ -70,23 +70,21 @@ class Compaction:
         Modify self.G, self.dcel, halfedge_side
         """
 
-        def find_front(he, target):
-            init_he = he
+        def find_front(init_he, target):  # first
             cnt = 0
-            while cnt != target:
+            for he in init_he.traverse():
                 side, next_side = halfedge_side[he], halfedge_side[he.succ]
-                if side == next_side: # go straight
+                if side == next_side:  # go straight
                     pass
-                elif (side + 1) % 4 == next_side: # go right
+                elif (side + 1) % 4 == next_side:  # go right
                     cnt += 1
-                elif (side + 2) % 4 == next_side: # go back
+                elif (side + 2) % 4 == next_side:  # go back
                     cnt -= 2
-                else: # go left
+                else:  # go left
                     cnt -= 1
-                he = he.succ
-                if he is init_he:
-                    raise Exception("can't find front edge")
-            return he
+                if cnt == target:
+                    return he.succ
+            raise Exception(f"can't find front edge of {init_he}")
 
         def refine(face, target): # insert only one edge to make face more rect, internal
             for he in face.surround_half_edges():
