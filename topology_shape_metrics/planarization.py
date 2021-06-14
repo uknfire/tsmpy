@@ -18,23 +18,18 @@ class Planarization:
         self.dcel.ext_face.is_external = True
 
     def get_external_face(self, pos):
-        def left_most(G):
-            corner_node = min(pos, key=lambda k: (pos[k][0], pos[k][1]))
-            other = max(
-                G.adj[corner_node], key=lambda node:
-                (pos[node][1] - pos[corner_node][1]) /
-                (
-                    (pos[node][0] - pos[corner_node][0])**2 +
-                    (pos[node][1] - pos[corner_node][1])**2
-                )**0.5
-            )  # maximum sine value
-            return sorted([corner_node, other], key=lambda node:
-                          (pos[node][1], pos[node][0]))
-
         if len(pos) < 2:
             return list(self.dcel.faces.values())[0]
-        down, up = left_most(self.G)
-        return self.dcel.half_edges[up, down].inc
+        corner_node = min(pos, key=lambda k: (pos[k][0], pos[k][1]))
+
+        sine_vals = {}
+        for node in self.G.adj[corner_node]:
+            dx = pos[node][0] - pos[corner_node][0]
+            dy = pos[node][1] - pos[corner_node][1]
+            sine_vals[node] = dy / (dx**2 + dy**2)**0.5
+
+        other_node = min(sine_vals, key=lambda node:sine_vals[node])
+        return self.dcel.half_edges[corner_node, other_node].inc
 
     def dfs_face_order(self):  # dfs dual graph, starts at ext_face
         res = []
