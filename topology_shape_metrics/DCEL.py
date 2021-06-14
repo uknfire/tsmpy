@@ -6,11 +6,11 @@ from pprint import pprint
 class HalfEdge:
     def __init__(self, name):
         self.id = name
-        self.inc = None # the incident face'
-        self.twin = None
-        self.ori  = None
-        self.prev = None
-        self.succ = None
+        self.inc: Face = None # the incident face'
+        self.twin: HalfEdge = None
+        self.ori: Vertex= None
+        self.prev: HalfEdge = None
+        self.succ: HalfEdge = None
 
     def print(self):
         pprint(vars(self))
@@ -59,9 +59,9 @@ class Vertex:
         for he in self.surround_half_edges():
             if he.inc is face:
                 return he
-        return None
+        raise Exception("not find")
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f'{self.id}'
 
     def __hash__(self):
@@ -73,7 +73,7 @@ class Vertex:
 class Face:
     def __init__(self, name):
         self.id = name
-        self.inc = None # the first half-edge incident to the face from left
+        self.inc: HalfEdge = None # the first half-edge incident to the face from left
         self.is_external = False
 
     def __len__(self):
@@ -100,9 +100,14 @@ class Face:
         pprint(vars(self))
 
 class Dcel:
+    """
+    Build double connected edge list for a connected planar graph.
+    Require the number of nodes greater than 1.
+    Naming vertice with node name.
+    Naming halfedge with (u, v).
+    Nmming face with ('face', %d).
+    """
     def __init__(self, G, embedding):
-        # assert nx.check_planarity(G)[0]
-
         self.vertices = {}
         self.half_edges = {}
         self.faces = {}
@@ -174,10 +179,7 @@ class Dcel:
             self.half_edges[v1, v2].twin = self.half_edges[v2, v1]
             self.half_edges[v2, v1].twin = self.half_edges[v1, v2]
 
-    def connect(self, face, u, v): # u, v in same face
-        assert u in [v.id for v in face.surround_vertices()], (face, self.vertices[u].inc.inc)
-        assert v in [v.id for v in face.surround_vertices()], (v, face)
-
+    def connect(self, face: Face, u, v, halfedge_side, side_uv): # u, v in same face
         def insert_halfedge(u, v, f, prev_he, succ_he):
             he = HalfEdge((u, v))
             self.half_edges[u, v] = he
@@ -189,35 +191,61 @@ class Dcel:
             for h in he.traverse():
                 h.inc = f
 
-        def find_all(face, start_id, end_id):
-            for he in face.surround_half_edges():
-                if he.ori.id == start_id:
-                    res = []
-                    for e in he.traverse():
-                        if e.ori.id == end_id:
-                            res.append(e)
-                    return res
-            raise Exception("Not found")
-
-
+        # It's true only if G is connected.
         face_l = Face(('face', *face.id[1:], 'l'))
         face_r = Face(('face', *face.id[1:], 'r'))
+
         if face.is_external:
             face_r.is_external = True
             self.ext_face = face_r
-        # Be careful here
-        hes_u2v = find_all(face, u, v)
-        hes_v2u = find_all(face, v, u)
-        prev_he_u = hes_v2u[-1].prev
-        succ_he_v = hes_u2v[0]
-        prev_he_v = hes_u2v[0].prev
-        succ_he_u = hes_v2u[-1]
 
-        insert_halfedge(u, v, face_r, prev_he_u, succ_he_v)
-        insert_halfedge(v, u, face_l, prev_he_v, succ_he_u)
+        hes_u = [he for he in self.vertices[u].surround_half_edges() if he.inc == face]
+        hes_v = [he for he in self.vertices[v].surround_half_edges() if he.inc == face]
+
+        # It's very important to select the  right halfedge, depending on its side
+        def select(outgoing_side, hes):
+            if len(hes) == 1:
+                return hes[0]
+
+            side_dict = {halfedge_side[he]: he for he in hes}
+            for side in [(outgoing_side + i) % 4 for i in [3, 2, 1]]:
+                if side in side_dict:
+                    return side_dict[side]
+
+        he_u = select(side_uv, hes_u)
+        he_v = select((side_uv + 2) % 4, hes_v)
+
+        prev_uv = he_u.prev
+        succ_uv = he_v
+        prev_vu = he_v.prev
+        succ_vu = he_u
+
+        insert_halfedge(u, v, face_r, prev_uv, succ_uv)
+        insert_halfedge(v, u, face_l, prev_vu, succ_vu)
         self.half_edges[u, v].twin = self.half_edges[v, u]
         self.half_edges[v, u].twin = self.half_edges[u, v]
         self.faces.pop(face.id)
+
+    def connect_diff(self, face: Face, u, v):
+        assert type(u) != Vertex
+        assert type(v) != Vertex
+        def insert_halfedge(u, v, f, prev_he, succ_he):
+            he = HalfEdge((u, v))
+            self.half_edges[u, v] = he
+            he.set(None, self.vertices[u], prev_he, succ_he, f)
+            prev_he.succ = he
+            succ_he.prev = he
+        he_u = self.vertices[u].get_half_edge(face)
+        he_v = self.vertices[v].get_half_edge(face)
+        prev_uv = he_u.prev
+        succ_uv = he_v
+        prev_vu = he_v.prev
+        succ_vu = he_u
+
+        insert_halfedge(u, v, face, prev_uv, succ_uv)
+        insert_halfedge(v, u, face, prev_vu, succ_vu)
+        self.half_edges[u, v].twin = self.half_edges[v, u]
+        self.half_edges[v, u].twin = self.half_edges[u, v]
 
     def print(self):
         for map, name in zip((self.vertices, self.half_edges, self.faces), ('v', 'he', 'face')):

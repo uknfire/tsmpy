@@ -50,6 +50,7 @@ def number_of_cross(G, pos):
 def overlap_nodes(G, pos):
     inv_pos = {}
     for k, v in pos.items():
+        v = tuple(v) # compatible with pos given by nx.spring_layout()
         inv_pos[v] = inv_pos.get(v, ()) + (k,)
     return [node for nodes in inv_pos.values() if len(nodes) > 1 for node in nodes]
 
