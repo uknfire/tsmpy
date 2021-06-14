@@ -6,11 +6,11 @@ from pprint import pprint
 class HalfEdge:
     def __init__(self, name):
         self.id = name
-        self.inc = None # the incident face'
-        self.twin = None
-        self.ori  = None
-        self.prev = None
-        self.succ = None
+        self.inc: Face = None # the incident face'
+        self.twin: HalfEdge = None
+        self.ori: Vertex= None
+        self.prev: HalfEdge = None
+        self.succ: HalfEdge = None
 
     def print(self):
         pprint(vars(self))
@@ -59,9 +59,9 @@ class Vertex:
         for he in self.surround_half_edges():
             if he.inc is face:
                 return he
-        return None
+        raise Exception("not find")
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f'{self.id}'
 
     def __hash__(self):
@@ -73,7 +73,7 @@ class Vertex:
 class Face:
     def __init__(self, name):
         self.id = name
-        self.inc = None # the first half-edge incident to the face from left
+        self.inc: HalfEdge = None # the first half-edge incident to the face from left
         self.is_external = False
 
     def __len__(self):
@@ -100,9 +100,14 @@ class Face:
         pprint(vars(self))
 
 class Dcel:
+    """
+    Build double connected edge list for a connected planar graph.
+    Require the number of nodes greater than 1.
+    Naming vertice with node name.
+    Naming halfedge with (u, v).
+    Nmming face with ('face', %d).
+    """
     def __init__(self, G, embedding):
-        # assert nx.check_planarity(G)[0]
-
         self.vertices = {}
         self.half_edges = {}
         self.faces = {}
