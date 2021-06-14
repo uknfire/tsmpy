@@ -47,43 +47,35 @@ class TestGML(unittest.TestCase):
         plt.close()
 
 
-    def test_4_nocut(self):
-        """no cut edge"""
+    def test_4_nocut(self): # no cut edge
         TestGML._test("test/inputs/case4.gml")
         TestGML._test("test/inputs/case4.gml", uselp=True)
 
-    def test_2_nocut(self):
-        """no cut edge"""
+    def test_2_nocut(self): # no cut edge
         TestGML._test("test/inputs/case2.gml")
         TestGML._test("test/inputs/case2.gml", uselp=True)
 
-    def test_5_2cut_external(self):
-        """a small graph, has two external cut-edges"""
+    def test_5_2cut_external(self): # a small graph, has two external cut-edges
         TestGML._test("test/inputs/case5.gml")
         TestGML._test("test/inputs/case5.gml", uselp=True)
 
-    def test_7_1cut_internal(self):
-        """a small graph, has one internal cut-edge"""
+    def test_7_1cut_internal(self): # a small graph, has one internal cut-edge
         TestGML._test("test/inputs/case7.gml")
         TestGML._test("test/inputs/case7.gml", uselp=True)
 
-    def test_8_cut_external(self):
-        """external face has cut-edges, simpler that case1"""
+    def test_8_cut_external(self): # external face has cut-edges, simpler that case1
         TestGML._test("test/inputs/case8.gml")
         TestGML._test("test/inputs/case8.gml", uselp=True)
 
-    def test_1_cut_external(self):
-        """external face has cut-edges"""
+    def test_1_cut_external(self): # external face has cut-edges
         TestGML._test("test/inputs/case1.gml")
         TestGML._test("test/inputs/case1.gml", uselp=True)
 
-    def test_6_cut_internal(self):
-        """internal face has cut-edges"""
+    def test_6_cut_internal(self): # internal face has cut-edges
         TestGML._test("test/inputs/case6.gml")
         TestGML._test("test/inputs/case6.gml", uselp=True)
 
-    def test_3_cut_both(self):
-        """inner face has cut-edges (most difficult)"""
+    def test_3_cut_both(self): # inner face has cut-edges (most difficult
         TestGML._test("test/inputs/case3.gml")
         TestGML._test("test/inputs/case3.gml", uselp=True)
 
