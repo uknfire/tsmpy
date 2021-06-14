@@ -220,6 +220,28 @@ class Dcel:
         self.half_edges[u, v].twin = self.half_edges[v, u]
         self.half_edges[v, u].twin = self.half_edges[u, v]
         self.faces.pop(face.id)
+
+    def connect_diff(self, face: Face, u, v):
+        assert type(u) != Vertex
+        assert type(v) != Vertex
+        def insert_halfedge(u, v, f, prev_he, succ_he):
+            he = HalfEdge((u, v))
+            self.half_edges[u, v] = he
+            he.set(None, self.vertices[u], prev_he, succ_he, f)
+            prev_he.succ = he
+            succ_he.prev = he
+        he_u = self.vertices[u].get_half_edge(face)
+        he_v = self.vertices[v].get_half_edge(face)
+        prev_uv = he_u.prev
+        succ_uv = he_v
+        prev_vu = he_v.prev
+        succ_vu = he_u
+
+        insert_halfedge(u, v, face, prev_uv, succ_uv)
+        insert_halfedge(v, u, face, prev_vu, succ_vu)
+        self.half_edges[u, v].twin = self.half_edges[v, u]
+        self.half_edges[v, u].twin = self.half_edges[u, v]
+
     def print(self):
         for map, name in zip((self.vertices, self.half_edges, self.faces), ('v', 'he', 'face')):
             print(name)
