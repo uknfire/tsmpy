@@ -4,7 +4,12 @@ An implementation of orthogonal drawing algorithm in Python
 
 Main idea comes from [A Generic Framework for the Topology-Shape-Metrics Based Layout](https://rtsys.informatik.uni-kiel.de/~biblio/downloads/theses/pkl-mt.pdf)
 
-# Usage
+# How to run code
+## Install requirements
+```bash
+pip install -r requirements.txt
+```
+## Usage
 ```Python
 # in root dir
 import networkx as nx
@@ -22,24 +27,25 @@ tsm.display()
 plt.savefig("test/outputs/case2.nolp.svg")
 ```
 
-# Run tests
+## Run test
 ```bash
 # show help
 python test.py -h
 
-# run test on case2 and case4, generating svg file in test/outputs
-python test.py TestGML -k nocut
+# run all tests
+python test.py
 
-# run all 7 tests in TestGML.
-# note that it fails in 4 tests.(because they have cut-edges)
+# run all tests in TestGML
 python test.py TestGML
 ```
 
 # An example of results(case2)
 |not use lp | use lp|
 |---|---|
-|![not use lp](https://raw.githubusercontent.com/rawfh/orthogonal-drawing-algorithm/master/test/outputs/case2.nolp.svg)|![not use lp](https://raw.githubusercontent.com/rawfh/orthogonal-drawing-algorithm/master/test/outputs/case2.lp.svg)|
+|![not use lp](https://raw.githubusercontent.com/uknfire/orthogonal-drawing/master/test/outputs/case2.nolp.svg)|![not use lp](https://raw.githubusercontent.com/uknfire/orthogonal-drawing/master/test/outputs/case2.lp.svg)|
 
+# Playground
+Try editing original file with [yed](https://www.yworks.com/yed-live/?file=https://gist.githubusercontent.com/uknfire/1a6782b35d066d6e59e00ed8dc0bb795/raw/eaee6eee89c48efa1c234f31fd8f9c32d237ce1e/case2)
 # Requirements for input graph
 * Planar
 * Connected
@@ -49,15 +55,10 @@ python test.py TestGML
 # Features
 * Using linear programing to solve minimum-cost flow problem, to reduce number of bends
 
-# Existing problems
-* Edge overlays and crossings in output
-* Node overlaps in output
-* May throw exception if the graph has cut-edges
-
 
 # TODO
-* Cleaner code
-* More comments
-* Fix overlay
-* Support node degree > 4
-* Support cut-edges
+- [ ] Cleaner code
+- [ ] More comments
+- [x] Fix overlay
+- [ ] Support node degree > 4
+- [x] Support cut-edges
