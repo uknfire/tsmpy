@@ -18,8 +18,6 @@ class Planarization:
         self.dcel.ext_face.is_external = True
 
     def get_external_face(self, pos):
-        if len(pos) < 2:
-            return list(self.dcel.faces.values())[0]
         corner_node = min(pos, key=lambda k: (pos[k][0], pos[k][1]))
 
         sine_vals = {}
