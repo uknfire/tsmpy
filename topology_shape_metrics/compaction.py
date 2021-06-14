@@ -5,12 +5,12 @@ from topology_shape_metrics.DCEL import Dcel
 import networkx as nx
 
 class Compaction:
-    '''
+    """
     Assign minimum lengths to the segments of the edges of the orthogonal representation.
-    '''
+    """
 
     def __init__(self, ortho):
-        self.planar = ortho.planar.copy() # Try to not modify original G
+        self.planar = ortho.planar.copy()  # Try to not modify original G
         self.G = self.planar.G
         self.dcel = self.planar.dcel
 
@@ -24,9 +24,9 @@ class Compaction:
         self.remove_dummy()
 
     def bend_point_processor(self, flow_dict):
-        '''Create bend nodes.
+        """Create bend nodes.
         Modify self.G, self.dcel and flow_dict
-        '''
+        """
         bends = {}  # left to right
         for he in self.dcel.half_edges.values():
             lf, rf = he.twin.inc, he.inc
@@ -45,12 +45,12 @@ class Compaction:
             self.G.remove_edge(u, v)
             # use ('bend', idx) to represent bend node
             flow_dict[u][rf_id][u,
-                                        ('bend', idx)] = flow_dict[u][rf_id].pop((u, v))
+                                ('bend', idx)] = flow_dict[u][rf_id].pop((u, v))
 
             for i in range(num_bends):
                 cur_node = ('bend', idx)
-                pre_node = ('bend', idx-1) if i > 0 else u
-                nxt_node = ('bend', idx+1) if i < num_bends - 1 else v
+                pre_node = ('bend', idx - 1) if i > 0 else u
+                nxt_node = ('bend', idx + 1) if i < num_bends - 1 else v
                 self.G.add_edge(pre_node, cur_node)
                 self.dcel.add_node_between(
                     pre_node, cur_node, v
@@ -62,13 +62,13 @@ class Compaction:
                 idx += 1
 
             flow_dict[v][lf_id][v,
-                                     ('bend', idx-1)] = flow_dict[v][lf_id].pop((v, u))
-            self.G.add_edge(('bend', idx-1), v)
+                                ('bend', idx - 1)] = flow_dict[v][lf_id].pop((v, u))
+            self.G.add_edge(('bend', idx - 1), v)
 
     def refine_faces(self, halfedge_side):
-        '''Make face rectangle, create dummpy nodes
+        """Make face rectangle, create dummpy nodes
         Modify self.G, self.dcel, halfedge_side
-        '''
+        """
 
         def find_front(he, target):
             init_he = he
@@ -100,7 +100,6 @@ class Compaction:
                     extend_node_id = he.twin.ori.id
                     l, r = front_he.ori.id, front_he.twin.ori.id
                     he_l2r = self.dcel.half_edges[l, r]
-                    # process G
                     dummy_node_id = ("dummy", extend_node_id)
                     self.G.remove_edge(l, r)
                     self.G.add_edge(l, dummy_node_id)
@@ -139,8 +138,7 @@ class Compaction:
 
 
     def face_side_processor(self, flow_dict):
-        '''Assign edges with face sides, depending on flow_dict
-        '''
+        """Assign edges with face sides, depending on flow_dict"""
 
         def update_face_edge(halfedge_side, face, base):
             for he in face.surround_half_edges():
@@ -182,9 +180,10 @@ class Compaction:
         return halfedge_side
 
     def tidy_rectangle_compaction(self, halfedge_side):
-        '''
+        """
         Compute every edge's length, depending on halfedge_side
-        '''
+        """
+
         def build_flow(target_side):
             flow = Flow_net()
             for he, side in halfedge_side.items():
@@ -200,23 +199,16 @@ class Compaction:
                 return {}
             for node in flow:
                 flow.nodes[node]['demand'] = 0
-            flow.nodes[source]['demand'] = -2**32
-            flow.nodes[sink]['demand'] = 2**32
+            flow.nodes[source]['demand'] = -2 ** 32
+            flow.nodes[sink]['demand'] = 2 ** 32
             for lf_id, rf_id, he_id in flow.edges:
                 # TODO: what if selfloop?
                 flow.edges[lf_id, rf_id, he_id]['weight'] = 1
                 flow.edges[lf_id, rf_id, he_id]['lowerbound'] = 1
-                flow.edges[lf_id, rf_id, he_id]['capacity'] = 2**32
+                flow.edges[lf_id, rf_id, he_id]['capacity'] = 2 ** 32
             flow.add_edge(source, sink, 'extend_edge',
-                             weight=0, lowerbound=0, capacity=2**32)
+                          weight=0, lowerbound=0, capacity=2 ** 32)
 
-            # selfloop，avoid inner edge longer than border
-            # for u, _ in flow.selfloop_edges():
-            #     in_nodes = [v for v, _ in flow.in_edges(u)]
-            #     assert in_nodes
-            #     delta = sum(flow[v][u]['lowerbound'] for v in in_nodes) - flow[u][u]['count']
-            #     if delta < 0:
-            #         flow.edges[in_nodes[0]][u]['lowerbound'] += -delta
             return flow.min_cost_flow()
 
         hor_flow = build_flow(1)  # up -> bottom
@@ -245,8 +237,7 @@ class Compaction:
         return halfedge_length
 
     def layout(self, halfedge_side, halfedge_length):
-        ''' return pos of self.G
-        '''
+        """ return pos of self.G"""
         pos = {}
         for face in self.planar.dfs_face_order():
             for start_he in face.surround_half_edges():
