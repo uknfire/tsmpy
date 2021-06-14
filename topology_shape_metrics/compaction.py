@@ -12,6 +12,7 @@ class Compaction:
     def __init__(self, ortho):
         self.planar = ortho.planar.copy()  # Try to not modify original G
         self.G = self.planar.G
+        ori_edges = list(self.G.edges)
         self.dcel = self.planar.dcel
 
         flow_dict = deepcopy(ortho.flow_dict)
@@ -22,11 +23,10 @@ class Compaction:
         halfedge_length = self.tidy_rectangle_compaction(halfedge_side)
         self.pos = self.layout(halfedge_side, halfedge_length)
         self.remove_dummy()
+        self.G.add_edges_from(ori_edges)
 
     def bend_point_processor(self, flow_dict):
-        """Create bend nodes.
-        Modify self.G, self.dcel and flow_dict
-        """
+        """Create bend nodes. Modify self.G, self.dcel and flow_dict"""
         bends = {}  # left to right
         for he in self.dcel.half_edges.values():
             lf, rf = he.twin.inc, he.inc
@@ -86,34 +86,108 @@ class Compaction:
                     return he.succ
             raise Exception(f"can't find front edge of {init_he}")
 
-        def refine(face, target): # insert only one edge to make face more rect, internal
+        def refine_internal(face):  # insert only one edge to make face more rect, internal
             for he in face.surround_half_edges():
                 side, next_side = halfedge_side[he], halfedge_side[he.succ]
                 if side != next_side and (side + 1) % 4 != next_side:
-                    try:
-                        front_he = find_front(he, target)
-                    except:
-                        continue
-
+                    front_he = find_front(he, 1)
                     extend_node_id = he.twin.ori.id
+
                     l, r = front_he.ori.id, front_he.twin.ori.id
                     he_l2r = self.dcel.half_edges[l, r]
                     dummy_node_id = ("dummy", extend_node_id)
                     self.G.remove_edge(l, r)
                     self.G.add_edge(l, dummy_node_id)
                     self.G.add_edge(dummy_node_id, r)
+
+                    face = self.dcel.half_edges[l, r].inc
+                    self.dcel.add_node_between(l, dummy_node_id, r)
+                    he_l2d = self.dcel.half_edges[l, dummy_node_id]
+                    he_d2r = self.dcel.half_edges[dummy_node_id, r]
+                    halfedge_side[he_l2d] = halfedge_side[he_l2r]
+                    halfedge_side[he_l2d.twin] = (halfedge_side[he_l2r] + 2) % 4
+                    halfedge_side[he_d2r] = halfedge_side[he_l2r]
+                    halfedge_side[he_d2r.twin] = (halfedge_side[he_l2r] + 2) % 4
+                    halfedge_side.pop(he_l2r)
+                    halfedge_side.pop(he_l2r.twin)
+
+
+                    self.G.add_edge(dummy_node_id, extend_node_id)
+                    self.dcel.connect(face, extend_node_id,
+                                      dummy_node_id, halfedge_side, halfedge_side[he])
+
+                    he_e2d = self.dcel.half_edges[extend_node_id, dummy_node_id]
+                    lf, rf = he_e2d.twin.inc, he_e2d.inc
+                    halfedge_side[he_e2d] = halfedge_side[he]
+                    halfedge_side[he_e2d.twin] = (halfedge_side[he] + 2) % 4
+
+                    refine_internal(lf)
+                    refine_internal(rf)
+                    break
+
+        def build_border(G, dcel, halfedge_side):
+            # create border dcel
+            border_nodes = [("dummy", -i) for i in range(1, 5)]
+            border_edges = [(border_nodes[i], border_nodes[(i + 1) % 4]) for i in range(4)]
+            border_G = nx.Graph(border_edges)
+            border_side_dict = {}
+            is_planar, border_embedding = nx.check_planarity(border_G)
+            border_dcel = Dcel(border_G, border_embedding)
+            ext_face = border_dcel.half_edges[(border_nodes[0], border_nodes[1])].twin.inc
+            border_dcel.ext_face = ext_face
+            ext_face.is_external = True
+
+            for face in list(border_dcel.faces.values()):
+                if not face.is_external:
+                    for i, he in enumerate(face.surround_half_edges()):
+                        he.inc = self.dcel.ext_face
+                        halfedge_side[he] = i  # assign side
+                        halfedge_side[he.twin] = (i + 2) % 4
+                        border_side_dict[i] = he
+                    border_dcel.faces.pop(face.id)
+                    border_dcel.faces[self.dcel.ext_face.id] = self.dcel.ext_face
+                else:
+                    # rename border_dcel.ext_face's name
+                    border_dcel.faces.pop(face.id)
+                    face.id = ("face", -1)
+                    border_dcel.faces[face.id] = face
+            G.add_edges_from(border_edges)
+
+            # merge border dcel into self.dcel
+            dcel.vertices.update(border_dcel.vertices)
+            dcel.half_edges.update(border_dcel.half_edges)
+            dcel.faces.update(border_dcel.faces)
+            dcel.ext_face.is_external = False
+            dcel.ext_face = border_dcel.ext_face
+            return border_side_dict
+
+        ori_ext_face = self.dcel.ext_face
+        border_side_dict = build_border(self.G, self.dcel, halfedge_side)
+
+
+        for he in ori_ext_face.surround_half_edges():
+            extend_node_id = he.succ.ori.id
+            side, next_side = halfedge_side[he], halfedge_side[he.succ]
+            if next_side != side and next_side != (side + 1) % 4:
+                if len(self.G[extend_node_id]) <= 2:
+                    front_he = border_side_dict[(side + 1) % 4]
+                    dummy_node_id = ("dummy", extend_node_id)
+                    l, r = front_he.ori.id, front_he.twin.ori.id
+                    he_l2r = self.dcel.half_edges[l, r]
+                    # process G
+                    self.G.remove_edge(l, r)
+                    self.G.add_edge(l, dummy_node_id)
+                    self.G.add_edge(dummy_node_id, r)
                     self.G.add_edge(dummy_node_id, extend_node_id)
 
                     # # process dcel
-                    face = self.dcel.half_edges[l, r].inc
+
                     self.dcel.add_node_between(l, dummy_node_id, r)
-                    self.dcel.connect(face, extend_node_id, dummy_node_id)
+                    self.dcel.connect_diff(ori_ext_face, extend_node_id, dummy_node_id)
 
                     he_e2d = self.dcel.half_edges[extend_node_id, dummy_node_id]
                     he_l2d = self.dcel.half_edges[l, dummy_node_id]
                     he_d2r = self.dcel.half_edges[dummy_node_id, r]
-                    lf, rf = he_e2d.twin.inc, he_e2d.inc
-
                     # process halfedge_side
                     halfedge_side[he_l2d] = halfedge_side[he_l2r]
                     halfedge_side[he_l2d.twin] = (halfedge_side[he_l2r] + 2) % 4
@@ -124,15 +198,13 @@ class Compaction:
                     halfedge_side[he_e2d.twin] = (halfedge_side[he] + 2) % 4
                     halfedge_side.pop(he_l2r)
                     halfedge_side.pop(he_l2r.twin)
-
-                    refine(lf, target)
-                    refine(rf, target)
                     break
+        else:
+            raise Exception("not connected")
 
-
-        # TODO: refine external face
         for face in list(self.dcel.faces.values()):
-            refine(face, 1)
+            if face.id != ("face", -1):
+                refine_internal(face)
 
 
     def face_side_processor(self, flow_dict):
@@ -260,10 +332,7 @@ class Compaction:
 
     def remove_dummy(self):
         for node in list(self.G.nodes):
-            if type(node) is tuple and node[0] == "dummy" and len(node) > 1:
-                extend_node_id = node[1]
-                assert len(self.G[node]) == 3
-                u, v = [nb for nb in self.G[node] if nb != extend_node_id]
-                self.G.remove_node(node)
-                self.G.add_edge(u, v)
-                self.pos.pop(node)
+            if type(node) is tuple and len(node) > 1:
+                if node[0] == "dummy":
+                    self.G.remove_node(node)
+                    self.pos.pop(node)
