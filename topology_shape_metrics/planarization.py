@@ -12,19 +12,13 @@ class Planarization:
         else:
             embedding = convert_pos_to_embedding(G, pos)
 
-        self.G = G
-        self.pos = pos  # is only used to find the ext_face now.
+        self.G = G.copy()
         self.dcel = Dcel(G, embedding)
-        self.dcel.ext_face = self.get_external_face()
+        self.dcel.ext_face = self.get_external_face(pos)
         self.dcel.ext_face.is_external = True
 
-    def copy(self):
-        new_planar = self.__new__(self.__class__)
-        new_planar.__init__(self.G, self.pos)
-        return new_planar
-
-    def get_external_face(self):
-        def left_most(G, pos):
+    def get_external_face(self, pos):
+        def left_most(G):
             corner_node = min(pos, key=lambda k: (pos[k][0], pos[k][1]))
             other = max(
                 G.adj[corner_node], key=lambda node:
@@ -33,13 +27,13 @@ class Planarization:
                     (pos[node][0] - pos[corner_node][0])**2 +
                     (pos[node][1] - pos[corner_node][1])**2
                 )**0.5
-            )  # maximum cosine value
+            )  # maximum sine value
             return sorted([corner_node, other], key=lambda node:
                           (pos[node][1], pos[node][0]))
 
-        if len(self.pos) < 2:
+        if len(pos) < 2:
             return list(self.dcel.faces.values())[0]
-        down, up = left_most(self.G, self.pos)
+        down, up = left_most(self.G)
         return self.dcel.half_edges[up, down].inc
 
     def dfs_face_order(self):  # dfs dual graph, starts at ext_face

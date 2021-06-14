@@ -10,7 +10,7 @@ class Compaction:
     """
 
     def __init__(self, ortho):
-        self.planar = ortho.planar.copy()  # Try to not modify original G
+        self.planar = ortho.planar  # Try to not modify original G
         self.G = self.planar.G
         ori_edges = list(self.G.edges)
         self.dcel = self.planar.dcel
