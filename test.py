@@ -1,9 +1,7 @@
 import networkx as nx
 from topology_shape_metrics.TSM import TSM
-from topology_shape_metrics.utils import convert_pos_to_embedding
-from topology_shape_metrics.DCEL import Dcel
-import unittest
 from matplotlib import pyplot as plt
+import unittest
 
 
 class TestRefine(unittest.TestCase):
