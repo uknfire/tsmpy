@@ -12,11 +12,11 @@ class Compaction:
     def __init__(self, ortho):
         self.planar = ortho.planar  # Try to not modify original G
         self.G = self.planar.G
-        ori_edges = list(self.G.edges)
         self.dcel = self.planar.dcel
 
         flow_dict = deepcopy(ortho.flow_dict)
         self.bend_point_processor(flow_dict)
+        ori_edges = list(self.G.edges)
         halfedge_side = self.face_side_processor(flow_dict)
         self.refine_faces(halfedge_side)
 
@@ -66,7 +66,7 @@ class Compaction:
             self.G.add_edge(('bend', idx - 1), v)
 
     def refine_faces(self, halfedge_side):
-        """Make face rectangle, create dummpy nodes
+        """Make face rectangle, create dummpy nodes.
         Modify self.G, self.dcel, halfedge_side
         """
 
