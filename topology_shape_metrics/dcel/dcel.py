@@ -1,95 +1,9 @@
 """DCEL means Doubly connected edge list(also known as half-edge data structure).
 It is a data structure to represent an embedding of a planar graph in the plane
 """
-
-
-class HalfEdge:
-    def __init__(self, name):
-        self.id = name
-        self.inc = None  # the incident face'
-        self.twin = None
-        self.ori = None
-        self.prev = None
-        self.succ = None
-
-    def get_points(self):
-        return self.ori.id, self.twin.ori.id
-
-    def set(self, twin, ori, prev, succ, inc):
-        self.twin = twin
-        self.ori = ori
-        self.prev = prev
-        self.succ = succ
-        self.inc = inc
-
-    def traverse(self):
-        he = self.succ
-        yield self
-        while he is not self:
-            yield he
-            he = he.succ
-
-    def __repr__(self) -> str:
-        return f'{self.id}'
-
-    def __hash__(self):
-        return hash(self.id)
-
-
-class Vertex:
-    def __init__(self, name):
-        self.id = name
-        self.inc = None  # 'the first outgoing incident half-edge'
-
-    def surround_faces(self):  # clockwise, duplicated
-        for he in self.surround_half_edges():
-            yield he.inc
-
-    def surround_half_edges(self):  # clockwise
-        yield self.inc
-        he = self.inc.prev.twin
-        while he is not self.inc:
-            yield he
-            he = he.prev.twin
-
-    def get_half_edge(self, face):
-        for he in self.surround_half_edges():
-            if he.inc is face:
-                return he
-        raise Exception("not find")
-
-    def __repr__(self):
-        return f'{self.id}'
-
-    def __hash__(self):
-        return hash(self.id)
-
-
-class Face:
-    def __init__(self, name):
-        self.id = name
-        self.inc = None  # the first half-edge incident to the face from left
-        self.is_external = False
-
-    def __len__(self):
-        return len(list(self.surround_vertices()))
-
-    def __repr__(self) -> str:
-        return str(self.id)
-
-    def surround_faces(self):  # clockwise, duplicated!!
-        for he in self.surround_half_edges():
-            yield he.twin.inc
-
-    def surround_half_edges(self):  # clockwise
-        yield from self.inc.traverse()
-
-    def surround_vertices(self):
-        for he in self.surround_half_edges():
-            yield he.ori
-
-    def __hash__(self):
-        return hash(self.id)
+from topology_shape_metrics.dcel.face import Face
+from topology_shape_metrics.dcel.halfedge import HalfEdge
+from topology_shape_metrics.dcel.vertex import Vertex
 
 
 class Dcel:
