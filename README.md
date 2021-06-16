@@ -13,7 +13,7 @@ pip install -r requirements.txt
 ```Python
 # in root dir
 import networkx as nx
-from topology_shape_metrics.TSM import TSM
+from tsmpy import TSM
 from matplotlib import pyplot as plt
 
 G = nx.Graph(nx.read_gml("test/inputs/case2.gml")) # a nx.Graph object
@@ -49,7 +49,7 @@ python test.py TestGML
 |![case3](https://raw.githubusercontent.com/uknfire/orthogonal-drawing/master/test/outputs/case3.lp.svg)|![case4](https://raw.githubusercontent.com/uknfire/orthogonal-drawing/master/test/outputs/case4.lp.svg)|
 
 # Playground
-Try editing original file with [yed](https://www.yworks.com/yed-live/?file=https://gist.githubusercontent.com/uknfire/1a6782b35d066d6e59e00ed8dc0bb795/raw/eaee6eee89c48efa1c234f31fd8f9c32d237ce1e/case2)
+Try editing original graph with [yed](https://www.yworks.com/yed-live/?file=https://gist.githubusercontent.com/uknfire/1a6782b35d066d6e59e00ed8dc0bb795/raw/eaee6eee89c48efa1c234f31fd8f9c32d237ce1e/case2)
 # Requirements for input graph
 * Planar
 * Connected
