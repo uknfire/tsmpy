@@ -300,25 +300,27 @@ class Compaction:
     def layout(self, halfedge_side, halfedge_length):
         """ return pos of self.G"""
         pos = {}
-        for face in self.planar.dfs_face_order():
-            for start_he in face.surround_half_edges():
-                if not pos:
-                    pos[start_he.ori.id] = (0, 0)  # initial point
-                if start_he.ori.id in pos:  # has found a start point
-                    for he in start_he.traverse():
-                        u, v = he.get_points()
-                        side = halfedge_side[he]
-                        length = halfedge_length[he]
-                        x, y = pos[u]
-                        if side == 1:
-                            pos[v] = (x + length, y)
-                        elif side == 3:
-                            pos[v] = (x - length, y)
-                        elif side == 0:
-                            pos[v] = (x, y + length)
-                        else:  # side == 2
-                            pos[v] = (x, y - length)
-                    break
+
+        def set_coord(init_he, x, y):
+            for he in init_he.traverse():
+                pos[he.ori.id] = (x, y)
+                side = halfedge_side[he]
+                length = halfedge_length[he]
+                if side == 1:
+                    x += length
+                elif side == 3:
+                    x -= length
+                elif side == 0:
+                    y += length
+                else:
+                    y -= length
+
+            for he in init_he.traverse():
+                for e in he.ori.surround_half_edges():
+                    if e.twin.ori.id not in pos:
+                        set_coord(e, *pos[e.ori.id])
+
+        set_coord(self.dcel.ext_face.inc, 0, 0)
         return pos
 
     def remove_dummy(self):
@@ -326,4 +328,4 @@ class Compaction:
             if type(node) is tuple and len(node) > 1:
                 if node[0] == "dummy":
                     self.G.remove_node(node)
-                    self.pos.pop(node)
+                    self.pos.pop(node, None)
