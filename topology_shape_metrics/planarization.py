@@ -2,9 +2,11 @@ from .utils import convert_pos_to_embedding
 from .dcel import Dcel
 import networkx as nx
 
+
 class Planarization:
-    '''This step determines the topology of the drawing which is described by a planar embedding.
-    '''
+    """Determine the topology of the drawing which is described by a planar embedding.
+    """
+
     def __init__(self, G, pos=None):
         if pos is None:
             is_planar, embedding = nx.check_planarity(G)
@@ -26,17 +28,5 @@ class Planarization:
             dy = pos[node][1] - pos[corner_node][1]
             sine_vals[node] = dy / (dx**2 + dy**2)**0.5
 
-        other_node = min(sine_vals, key=lambda node:sine_vals[node])
+        other_node = min(sine_vals, key=lambda node: sine_vals[node])
         return self.dcel.half_edges[corner_node, other_node].inc
-
-    def dfs_face_order(self):  # dfs dual graph, starts at ext_face
-        res = []
-        marked = set()
-        def dfs(face):
-            res.append(face)
-            marked.add(face.id)
-            for nb in set(face.surround_faces()):
-                if nb.id not in marked:
-                    dfs(nb)
-        dfs(self.dcel.ext_face)
-        return res
