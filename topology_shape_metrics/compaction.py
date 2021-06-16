@@ -1,8 +1,8 @@
 from copy import deepcopy
-from collections import defaultdict
 from .flownet import Flow_net
 from .dcel import Dcel
 import networkx as nx
+
 
 class Compaction:
     """
@@ -10,7 +10,7 @@ class Compaction:
     """
 
     def __init__(self, ortho):
-        self.planar = ortho.planar  # Try to not modify original G
+        self.planar = ortho.planar
         self.G = self.planar.G
         self.dcel = self.planar.dcel
 
@@ -86,7 +86,8 @@ class Compaction:
                     return he.succ
             raise Exception(f"can't find front edge of {init_he}")
 
-        def refine_internal(face):  # insert only one edge to make face more rect, internal
+        def refine_internal(face):
+            """Insert only one edge to make face more rect"""
             for he in face.surround_half_edges():
                 side, next_side = halfedge_side[he], halfedge_side[he.succ]
                 if side != next_side and (side + 1) % 4 != next_side:
@@ -105,18 +106,20 @@ class Compaction:
                     he_l2d = self.dcel.half_edges[l, dummy_node_id]
                     he_d2r = self.dcel.half_edges[dummy_node_id, r]
                     halfedge_side[he_l2d] = halfedge_side[he_l2r]
-                    halfedge_side[he_l2d.twin] = (halfedge_side[he_l2r] + 2) % 4
+                    halfedge_side[he_l2d.twin] = (
+                        halfedge_side[he_l2r] + 2) % 4
                     halfedge_side[he_d2r] = halfedge_side[he_l2r]
-                    halfedge_side[he_d2r.twin] = (halfedge_side[he_l2r] + 2) % 4
+                    halfedge_side[he_d2r.twin] = (
+                        halfedge_side[he_l2r] + 2) % 4
                     halfedge_side.pop(he_l2r)
                     halfedge_side.pop(he_l2r.twin)
-
 
                     self.G.add_edge(dummy_node_id, extend_node_id)
                     self.dcel.connect(face, extend_node_id,
                                       dummy_node_id, halfedge_side, halfedge_side[he])
 
-                    he_e2d = self.dcel.half_edges[extend_node_id, dummy_node_id]
+                    he_e2d = self.dcel.half_edges[extend_node_id,
+                                                  dummy_node_id]
                     lf, rf = he_e2d.twin.inc, he_e2d.inc
                     halfedge_side[he_e2d] = halfedge_side[he]
                     halfedge_side[he_e2d.twin] = (halfedge_side[he] + 2) % 4
@@ -126,14 +129,16 @@ class Compaction:
                     break
 
         def build_border(G, dcel, halfedge_side):
-            # create border dcel
+            """Create border dcel"""
             border_nodes = [("dummy", -i) for i in range(1, 5)]
-            border_edges = [(border_nodes[i], border_nodes[(i + 1) % 4]) for i in range(4)]
+            border_edges = [(border_nodes[i], border_nodes[(i + 1) % 4])
+                            for i in range(4)]
             border_G = nx.Graph(border_edges)
             border_side_dict = {}
             is_planar, border_embedding = nx.check_planarity(border_G)
             border_dcel = Dcel(border_G, border_embedding)
-            ext_face = border_dcel.half_edges[(border_nodes[0], border_nodes[1])].twin.inc
+            ext_face = border_dcel.half_edges[(
+                border_nodes[0], border_nodes[1])].twin.inc
             border_dcel.ext_face = ext_face
             ext_face.is_external = True
 
@@ -164,7 +169,6 @@ class Compaction:
         ori_ext_face = self.dcel.ext_face
         border_side_dict = build_border(self.G, self.dcel, halfedge_side)
 
-
         for he in ori_ext_face.surround_half_edges():
             extend_node_id = he.succ.ori.id
             side, next_side = halfedge_side[he], halfedge_side[he.succ]
@@ -183,16 +187,20 @@ class Compaction:
                     # # process dcel
 
                     self.dcel.add_node_between(l, dummy_node_id, r)
-                    self.dcel.connect_diff(ori_ext_face, extend_node_id, dummy_node_id)
+                    self.dcel.connect_diff(
+                        ori_ext_face, extend_node_id, dummy_node_id)
 
-                    he_e2d = self.dcel.half_edges[extend_node_id, dummy_node_id]
+                    he_e2d = self.dcel.half_edges[extend_node_id,
+                                                  dummy_node_id]
                     he_l2d = self.dcel.half_edges[l, dummy_node_id]
                     he_d2r = self.dcel.half_edges[dummy_node_id, r]
                     # process halfedge_side
                     halfedge_side[he_l2d] = halfedge_side[he_l2r]
-                    halfedge_side[he_l2d.twin] = (halfedge_side[he_l2r] + 2) % 4
+                    halfedge_side[he_l2d.twin] = (
+                        halfedge_side[he_l2r] + 2) % 4
                     halfedge_side[he_d2r] = halfedge_side[he_l2r]
-                    halfedge_side[he_d2r.twin] = (halfedge_side[he_l2r] + 2) % 4
+                    halfedge_side[he_d2r.twin] = (
+                        halfedge_side[he_l2r] + 2) % 4
 
                     halfedge_side[he_e2d] = halfedge_side[he]
                     halfedge_side[he_e2d.twin] = (halfedge_side[he] + 2) % 4
@@ -206,47 +214,28 @@ class Compaction:
             if face.id != ("face", -1):
                 refine_internal(face)
 
-
     def face_side_processor(self, flow_dict):
-        """Assign edges with face sides, depending on flow_dict"""
-
-        def update_face_edge(halfedge_side, face, base):
-            for he in face.surround_half_edges():
-                halfedge_side[he] = (halfedge_side[he] + base) % 4
+        """Give flow_dict, assign halfedges with face sides"""
 
         halfedge_side = {}
-        # clockwise 0 -> 1 -> 2 -> 3
-        for face in self.dcel.faces.values():
-            # set edges' side in internal faces independently at first
-            side = 0
-            for he in face.surround_half_edges():
+
+        def set_side(init_he, side):
+            for he in init_he.traverse():
                 halfedge_side[he] = side
-                end_angle = flow_dict[he.succ.ori.id][face.id][he.succ.id]
-                if end_angle == 1:
+                angle = flow_dict[he.succ.ori.id][he.inc.id][he.succ.id]
+                if angle == 1:
                     # turn right in internal face or turn left in external face
                     side = (side + 1) % 4
-                elif end_angle == 3:
+                elif angle == 3:
                     side = (side + 3) % 4
-                elif end_angle == 4:  # a single edge
+                elif angle == 4:  # a single edge
                     side = (side + 2) % 4
 
-        # update other face's edge side based on ext_face's edge side
-        faces_dfs = list(self.planar.dfs_face_order())
+            for he in init_he.traverse():
+                if he.twin not in halfedge_side:
+                    set_side(he.twin, (halfedge_side[he] + 2) % 4)
 
-        # all faces in dfs order
-        has_updated = {faces_dfs[0]}
-        for face in faces_dfs[1:]:
-            # at least one twin edge has been set
-            for he in face.surround_half_edges():
-                lf = he.twin.inc
-                if lf in has_updated:  # neighbor face has been updated
-                    # the edge that has been updated
-                    l_side = halfedge_side[he.twin]
-                    r_side = halfedge_side[he]  # side of u, v in face
-                    update_face_edge(
-                        halfedge_side, face, (l_side + 2) % 4 - r_side)
-                    has_updated.add(face)
-                    break
+        set_side(self.dcel.ext_face.inc, 0)
         return halfedge_side
 
     def tidy_rectangle_compaction(self, halfedge_side):
@@ -284,8 +273,10 @@ class Compaction:
         hor_flow = build_flow(1)  # up -> bottom
         ver_flow = build_flow(0)  # left -> right
 
-        hor_flow_dict = min_cost_flow(hor_flow, self.dcel.ext_face.id, ('face', 'end'))
-        ver_flow_dict = min_cost_flow(ver_flow, self.dcel.ext_face.id, ('face', 'end'))
+        hor_flow_dict = min_cost_flow(
+            hor_flow, self.dcel.ext_face.id, ('face', 'end'))
+        ver_flow_dict = min_cost_flow(
+            ver_flow, self.dcel.ext_face.id, ('face', 'end'))
 
         halfedge_length = {}
 
@@ -297,7 +288,7 @@ class Compaction:
 
                 if side == 0:
                     hv_flow_dict = ver_flow_dict
-                elif side == 1:
+                else:
                     hv_flow_dict = hor_flow_dict
 
                 length = hv_flow_dict[lf_id][rf_id][he.id]
