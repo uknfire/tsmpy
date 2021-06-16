@@ -1,5 +1,5 @@
 import networkx as nx
-from tsm import TSM
+from tsmpy import TSM
 from matplotlib import pyplot as plt
 import unittest
 
