@@ -19,10 +19,15 @@ class TSM:
 
     @staticmethod
     def ortho_layout(G, init_pos=None, uselp=True):
+        """Return pos and a new graph which may contain bend nodes"""
         planar = Planarization(G, init_pos)
         ortho = Orthogonalization(planar, uselp)
         compa = Compaction(ortho)
         return compa.G, compa.pos
+
+    @staticmethod
+    def is_bendnode(node):
+        return type(node) is tuple and len(node) > 1 and node[0] == "bend"
 
     def display(self):
         draw_nodes_kwds = {'G': self.G, 'pos': self.pos,
@@ -33,8 +38,7 @@ class TSM:
         nx.draw_networkx_edges(self.G, self.pos)
 
         # draw bend nodes if exist
-        bend_nodelist = {node for node in self.G.nodes if type(
-            node) == tuple and node[0] == 'bend'}
+        bend_nodelist = [node for node in self.G.nodes if TSM.is_bendnode(node)]
         if bend_nodelist:
             nx.draw_networkx_nodes(
                 nodelist=bend_nodelist, node_color='grey', **draw_nodes_kwds)
@@ -79,5 +83,5 @@ class TSM:
                 raise Exception("There are cross edges in pos")
 
         for node in G.nodes:
-            if type(node) is tuple and node[0] in ("dummy", "bend") and len(node) > 1:
+            if type(node) is tuple and len(node) > 1 and node[0] in ("dummy", "bend"):
                 raise Exception(f"Invalid node name: {node}")
