@@ -1,7 +1,6 @@
 """DCEL means Doubly connected edge list(also known as half-edge data structure).
 It is a data structure to represent an embedding of a planar graph in the plane
 """
-from pprint import pprint
 
 class HalfEdge:
     def __init__(self, name):
@@ -12,8 +11,6 @@ class HalfEdge:
         self.prev = None
         self.succ = None
 
-    def print(self):
-        pprint(vars(self))
 
     def get_points(self):
         return self.ori.id, self.twin.ori.id
@@ -67,8 +64,6 @@ class Vertex:
     def __hash__(self):
         return hash(self.id)
 
-    def print(self):
-        pprint(vars(self))
 
 class Face:
     def __init__(self, name):
@@ -96,8 +91,6 @@ class Face:
     def __hash__(self):
         return hash(self.id)
 
-    def print(self):
-        pprint(vars(self))
 
 class Dcel:
     """
