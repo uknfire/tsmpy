@@ -47,7 +47,7 @@ def number_of_cross(G, pos):
     return count
 
 
-def overlap_nodes(G, pos): # not effiencent
+def overlap_nodes(G, pos): # not efficient
     inv_pos = {}
     for k, v in pos.items():
         v = tuple(v) # compatible with pos given by nx.spring_layout()
@@ -55,7 +55,7 @@ def overlap_nodes(G, pos): # not effiencent
     return [node for nodes in inv_pos.values() if len(nodes) > 1 for node in nodes]
 
 
-def overlay_edges(G, pos): # not effiencent
+def overlay_edges(G, pos): # not efficient
     res = set()
     for a, b in G.edges:
         (xa, ya), (xb, yb) = pos[a], pos[b]
