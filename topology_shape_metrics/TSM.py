@@ -14,18 +14,18 @@ class TSM:
         if checkit:
             TSM.precheck(G, init_pos)
 
-        planar = Planarization(G, init_pos)
-        ortho = Orthogonalization(planar, uselp)
-        compa = Compaction(ortho)
-
-        # self.G != G, it may include additional bend nodes
-        self.G = compa.G
-        self.pos = compa.pos
+        self.G, self.pos = TSM.ortho_layout(G, init_pos, uselp)
 
     def postcheck(self):
         for u, v in self.G.edges:
             assert self.pos[u][0] == self.pos[v][0] or self.pos[u][1] == self.pos[v][1]
 
+    @staticmethod
+    def ortho_layout(G, init_pos=None, uselp=True):
+        planar = Planarization(G, init_pos)
+        ortho = Orthogonalization(planar, uselp)
+        compa = Compaction(ortho)
+        return compa.G, compa.pos
 
     def display(self):
         draw_nodes_kwds = {'G': self.G, 'pos': self.pos, 'node_size': 15, "edgecolors": 'black'}
