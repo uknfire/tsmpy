@@ -1,9 +1,9 @@
 """TSM means topology-shape-metrics, one approach for generating orthogonal layout.
 """
-from topology_shape_metrics.planarization import Planarization
-from topology_shape_metrics.orthogonalization import Orthogonalization
-from topology_shape_metrics.compaction import Compaction
-from topology_shape_metrics.utils import number_of_cross, overlap_nodes, overlay_edges
+from .planarization import Planarization
+from .orthogonalization import Orthogonalization
+from .compaction import Compaction
+from .utils import number_of_cross, overlap_nodes, overlay_edges
 import networkx as nx
 from matplotlib import pyplot as plt
 import matplotlib.patches as mpatches

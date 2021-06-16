@@ -1,6 +1,6 @@
 import pulp
 from collections import defaultdict
-from topology_shape_metrics.flownet import Flow_net
+from .flownet import Flow_net
 
 class Orthogonalization:
     '''works on a planar embedding, changes shape of the graph.

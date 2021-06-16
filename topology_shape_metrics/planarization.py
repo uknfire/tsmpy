@@ -1,5 +1,5 @@
-from topology_shape_metrics.utils import convert_pos_to_embedding
-from topology_shape_metrics.dcel import Dcel
+from .utils import convert_pos_to_embedding
+from .dcel import Dcel
 import networkx as nx
 
 class Planarization:

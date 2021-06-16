@@ -1,9 +1,9 @@
 """DCEL means Doubly connected edge list(also known as half-edge data structure).
 It is a data structure to represent an embedding of a planar graph in the plane
 """
-from topology_shape_metrics.dcel.face import Face
-from topology_shape_metrics.dcel.halfedge import HalfEdge
-from topology_shape_metrics.dcel.vertex import Vertex
+from .face import Face
+from .halfedge import HalfEdge
+from .vertex import Vertex
 
 
 class Dcel:

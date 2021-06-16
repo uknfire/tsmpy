@@ -1,1 +1,1 @@
-from topology_shape_metrics.dcel.dcel import Dcel
+from .dcel import Dcel
