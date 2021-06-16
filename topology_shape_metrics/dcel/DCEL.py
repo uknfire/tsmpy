@@ -2,15 +2,15 @@
 It is a data structure to represent an embedding of a planar graph in the plane
 """
 
+
 class HalfEdge:
     def __init__(self, name):
         self.id = name
-        self.inc = None # the incident face'
+        self.inc = None  # the incident face'
         self.twin = None
         self.ori = None
         self.prev = None
         self.succ = None
-
 
     def get_points(self):
         return self.ori.id, self.twin.ori.id
@@ -32,20 +32,20 @@ class HalfEdge:
     def __repr__(self) -> str:
         return f'{self.id}'
 
-
     def __hash__(self):
         return hash(self.id)
+
 
 class Vertex:
     def __init__(self, name):
         self.id = name
-        self.inc = None # 'the first outgoing incident half-edge'
+        self.inc = None  # 'the first outgoing incident half-edge'
 
-    def surround_faces(self): # clockwise, duplicated
+    def surround_faces(self):  # clockwise, duplicated
         for he in self.surround_half_edges():
             yield he.inc
 
-    def surround_half_edges(self): # clockwise
+    def surround_half_edges(self):  # clockwise
         yield self.inc
         he = self.inc.prev.twin
         while he is not self.inc:
@@ -68,7 +68,7 @@ class Vertex:
 class Face:
     def __init__(self, name):
         self.id = name
-        self.inc = None # the first half-edge incident to the face from left
+        self.inc = None  # the first half-edge incident to the face from left
         self.is_external = False
 
     def __len__(self):
@@ -77,11 +77,11 @@ class Face:
     def __repr__(self) -> str:
         return str(self.id)
 
-    def surround_faces(self): # clockwise, duplicated!!
+    def surround_faces(self):  # clockwise, duplicated!!
         for he in self.surround_half_edges():
             yield he.twin.inc
 
-    def surround_half_edges(self): # clockwise
+    def surround_half_edges(self):  # clockwise
         yield from self.inc.traverse()
 
     def surround_vertices(self):
@@ -100,6 +100,7 @@ class Dcel:
     Naming halfedge with (u, v).
     Nmming face with ('face', %d).
     """
+
     def __init__(self, G, embedding):
         self.vertices = {}
         self.half_edges = {}
@@ -172,7 +173,7 @@ class Dcel:
             self.half_edges[v1, v2].twin = self.half_edges[v2, v1]
             self.half_edges[v2, v1].twin = self.half_edges[v1, v2]
 
-    def connect(self, face: Face, u, v, halfedge_side, side_uv): # u, v in same face
+    def connect(self, face: Face, u, v, halfedge_side, side_uv):  # u, v in same face
         def insert_halfedge(u, v, f, prev_he, succ_he):
             he = HalfEdge((u, v))
             self.half_edges[u, v] = he
@@ -192,8 +193,10 @@ class Dcel:
             face_r.is_external = True
             self.ext_face = face_r
 
-        hes_u = [he for he in self.vertices[u].surround_half_edges() if he.inc == face]
-        hes_v = [he for he in self.vertices[v].surround_half_edges() if he.inc == face]
+        hes_u = [he for he in self.vertices[u].surround_half_edges()
+                 if he.inc == face]
+        hes_v = [he for he in self.vertices[v].surround_half_edges()
+                 if he.inc == face]
 
         # It's very important to select the  right halfedge, depending on its side
         def select(outgoing_side, hes):
@@ -222,6 +225,7 @@ class Dcel:
     def connect_diff(self, face: Face, u, v):
         assert type(u) != Vertex
         assert type(v) != Vertex
+
         def insert_halfedge(u, v, f, prev_he, succ_he):
             he = HalfEdge((u, v))
             self.half_edges[u, v] = he
@@ -245,5 +249,3 @@ class Dcel:
             print(name)
             for obj in map.values():
                 obj.print()
-
-
