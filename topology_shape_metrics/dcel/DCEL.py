@@ -243,9 +243,3 @@ class Dcel:
         insert_halfedge(v, u, face, prev_vu, succ_vu)
         self.half_edges[u, v].twin = self.half_edges[v, u]
         self.half_edges[v, u].twin = self.half_edges[u, v]
-
-    def print(self):
-        for map, name in zip((self.vertices, self.half_edges, self.faces), ('v', 'he', 'face')):
-            print(name)
-            for obj in map.values():
-                obj.print()
