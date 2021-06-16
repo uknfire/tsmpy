@@ -6,11 +6,11 @@ from pprint import pprint
 class HalfEdge:
     def __init__(self, name):
         self.id = name
-        self.inc: Face = None # the incident face'
-        self.twin: HalfEdge = None
-        self.ori: Vertex= None
-        self.prev: HalfEdge = None
-        self.succ: HalfEdge = None
+        self.inc = None # the incident face'
+        self.twin = None
+        self.ori = None
+        self.prev = None
+        self.succ = None
 
     def print(self):
         pprint(vars(self))
@@ -73,7 +73,7 @@ class Vertex:
 class Face:
     def __init__(self, name):
         self.id = name
-        self.inc: HalfEdge = None # the first half-edge incident to the face from left
+        self.inc = None # the first half-edge incident to the face from left
         self.is_external = False
 
     def __len__(self):
