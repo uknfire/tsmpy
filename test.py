@@ -5,7 +5,7 @@ import unittest
 
 
 class TestRefine(unittest.TestCase):
-    def test(gml_filename): # 凸
+    def test_convex(self): # 凸
         e = [(i, i + 1) for i in range(7)] + [(7, 0)]
         G = nx.Graph(e)
         pos = {0: (0, 0), 1: (0, 1), 2: (1, 1), 3: (1, 2),
@@ -13,10 +13,10 @@ class TestRefine(unittest.TestCase):
 
         tsm = TSM(G, pos)
         tsm.display()
-        plt.savefig("test/outputs/refine1.svg")
+        plt.savefig("test/outputs/convex.svg")
         plt.close()
 
-    def test2(gml_filename): # 十
+    def test_cross(self): # 十
         e = [(i, i + 1) for i in range(11)] + [(11, 0)]
         G = nx.Graph(e)
         pos = {0: (0, 0), 1: (0, 1), 2: (1, 1), 3: (1, 2),
@@ -25,7 +25,7 @@ class TestRefine(unittest.TestCase):
             }
         tsm = TSM(G, pos)
         tsm.display()
-        plt.savefig("test/outputs/refine2.svg")
+        plt.savefig("test/outputs/cross.svg")
         plt.close()
 
 class TestGML(unittest.TestCase):
