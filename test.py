@@ -38,7 +38,7 @@ class TestGML(unittest.TestCase):
         G = nx.Graph([node_dict[u], node_dict[v]] for u, v in G.edges)
         pos = {node_dict[k]: v for k, v in pos.items()}
 
-        tsm = TSM(G, pos, checkit=False, uselp=uselp)
+        tsm = TSM(G, pos, uselp=uselp)
         tsm.display()
         plt.savefig(gml_filename.replace(
             "inputs", "outputs").replace(".gml", f".{'lp' if uselp else 'nolp'}.svg"))

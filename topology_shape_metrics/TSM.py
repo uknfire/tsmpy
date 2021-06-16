@@ -10,10 +10,7 @@ import matplotlib.patches as mpatches
 
 
 class TSM:
-    def __init__(self, G, init_pos=None, checkit=True, uselp=False):
-        if checkit:
-            TSM.precheck(G, init_pos)
-
+    def __init__(self, G, init_pos=None, uselp=False):
         self.G, self.pos = TSM.ortho_layout(G, init_pos, uselp)
 
     def postcheck(self):
