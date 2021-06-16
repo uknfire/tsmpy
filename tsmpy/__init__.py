@@ -1,1 +1,1 @@
-from .TSM import TSM
+from .tsm import TSM
