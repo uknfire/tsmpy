@@ -37,13 +37,12 @@ class TSM:
     def display(self):
         draw_nodes_kwds = {'G': self.G, 'pos': self.pos,
                            'node_size': 15, "edgecolors": 'black'}
-        # draw all nodes
-        nx.draw_networkx_nodes(node_color='white', **draw_nodes_kwds)
-        # draw all edges
-        nx.draw_networkx_edges(self.G, self.pos)
+
+        nx.draw(node_color='white', **draw_nodes_kwds)
 
         # draw bend nodes if exist
-        bend_nodelist = [node for node in self.G.nodes if TSM.is_bendnode(node)]
+        bend_nodelist = [
+            node for node in self.G.nodes if TSM.is_bendnode(node)]
         if bend_nodelist:
             nx.draw_networkx_nodes(
                 nodelist=bend_nodelist, node_color='grey', **draw_nodes_kwds)
