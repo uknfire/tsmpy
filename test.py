@@ -29,8 +29,9 @@ class TestRefine(unittest.TestCase):
         plt.close()
 
 class TestGML(unittest.TestCase):
-    def _test(gml_filename, uselp=False):
-        G = nx.Graph(nx.read_gml(gml_filename))
+    @staticmethod
+    def _test(filename, uselp):
+        G = nx.Graph(nx.read_gml(filename))
         pos = {node: eval(node) for node in G}
 
         # shortify node name
@@ -40,42 +41,42 @@ class TestGML(unittest.TestCase):
 
         tsm = TSM(G, pos, uselp=uselp)
         tsm.display()
-        plt.savefig(gml_filename.replace(
+        plt.savefig(filename.replace(
             "inputs", "outputs").replace(".gml", f".{'lp' if uselp else 'nolp'}.svg"))
         plt.close()
 
 
     def test_4_nocut(self): # no cut edge
-        TestGML._test("test/inputs/case4.gml")
-        TestGML._test("test/inputs/case4.gml", uselp=True)
+        TestGML._test("test/inputs/case4.gml", False)
+        TestGML._test("test/inputs/case4.gml", True)
 
     def test_2_nocut(self): # no cut edge
-        TestGML._test("test/inputs/case2.gml")
-        TestGML._test("test/inputs/case2.gml", uselp=True)
+        TestGML._test("test/inputs/case2.gml", False)
+        TestGML._test("test/inputs/case2.gml", True)
 
     def test_5_2cut_external(self): # a small graph, has two external cut-edges
-        TestGML._test("test/inputs/case5.gml")
-        TestGML._test("test/inputs/case5.gml", uselp=True)
+        TestGML._test("test/inputs/case5.gml", False)
+        TestGML._test("test/inputs/case5.gml", True)
 
     def test_7_1cut_internal(self): # a small graph, has one internal cut-edge
-        TestGML._test("test/inputs/case7.gml")
-        TestGML._test("test/inputs/case7.gml", uselp=True)
+        TestGML._test("test/inputs/case7.gml", False)
+        TestGML._test("test/inputs/case7.gml", True)
 
     def test_8_cut_external(self): # external face has cut-edges, simpler that case1
-        TestGML._test("test/inputs/case8.gml")
-        TestGML._test("test/inputs/case8.gml", uselp=True)
+        TestGML._test("test/inputs/case8.gml", False)
+        TestGML._test("test/inputs/case8.gml", True)
 
     def test_1_cut_external(self): # external face has cut-edges
-        TestGML._test("test/inputs/case1.gml")
-        TestGML._test("test/inputs/case1.gml", uselp=True)
+        TestGML._test("test/inputs/case1.gml", False)
+        TestGML._test("test/inputs/case1.gml", True)
 
     def test_6_cut_internal(self): # internal face has cut-edges
-        TestGML._test("test/inputs/case6.gml")
-        TestGML._test("test/inputs/case6.gml", uselp=True)
+        TestGML._test("test/inputs/case6.gml", False)
+        TestGML._test("test/inputs/case6.gml", True)
 
     def test_3_cut_both(self): # inner face has cut-edges (most difficult
-        TestGML._test("test/inputs/case3.gml")
-        TestGML._test("test/inputs/case3.gml", uselp=True)
+        TestGML._test("test/inputs/case3.gml", False)
+        TestGML._test("test/inputs/case3.gml", True)
 
 
 class TestGrid(unittest.TestCase):
