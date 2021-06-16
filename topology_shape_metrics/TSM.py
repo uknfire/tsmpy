@@ -28,26 +28,31 @@ class TSM:
         return compa.G, compa.pos
 
     def display(self):
-        draw_nodes_kwds = {'G': self.G, 'pos': self.pos, 'node_size': 15, "edgecolors": 'black'}
+        draw_nodes_kwds = {'G': self.G, 'pos': self.pos,
+                           'node_size': 15, "edgecolors": 'black'}
         # draw all nodes
         nx.draw_networkx_nodes(node_color='white', **draw_nodes_kwds)
         # draw all edges
         nx.draw_networkx_edges(self.G, self.pos)
 
         # draw bend nodes if exist
-        bend_nodelist = {node for node in self.G.nodes if type(node) == tuple and node[0] == 'bend'}
+        bend_nodelist = {node for node in self.G.nodes if type(
+            node) == tuple and node[0] == 'bend'}
         if bend_nodelist:
-            nx.draw_networkx_nodes(nodelist=bend_nodelist, node_color='grey', **draw_nodes_kwds)
+            nx.draw_networkx_nodes(
+                nodelist=bend_nodelist, node_color='grey', **draw_nodes_kwds)
 
         # draw overlap nodes if exist
         overlap_nodelist = overlap_nodes(self.G, self.pos)
         if overlap_nodelist:
-            nx.draw_networkx_nodes(nodelist=overlap_nodelist, node_color="red", **draw_nodes_kwds)
+            nx.draw_networkx_nodes(
+                nodelist=overlap_nodelist, node_color="red", **draw_nodes_kwds)
 
         # draw overlay edges if exist
         overlay_edgelist = overlay_edges(self.G, self.pos)
         if overlay_edgelist:
-            nx.draw_networkx_edges(self.G, self.pos, edgelist=overlay_edgelist, edge_color='red')
+            nx.draw_networkx_edges(
+                self.G, self.pos, edgelist=overlay_edgelist, edge_color='red')
 
         # draw patches if exist
         patches = []
@@ -57,7 +62,6 @@ class TSM:
             patches.append(mpatches.Patch(color='grey', label='bend node'))
         if patches:
             plt.legend(handles=patches)
-
 
     @staticmethod
     def precheck(G, pos=None):
