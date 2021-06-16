@@ -1,7 +1,7 @@
 from copy import deepcopy
 from collections import defaultdict
 from topology_shape_metrics.flownet import Flow_net
-from topology_shape_metrics.DCEL import Dcel
+from topology_shape_metrics.dcel import Dcel
 import networkx as nx
 
 class Compaction:
