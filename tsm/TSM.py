@@ -29,6 +29,11 @@ class TSM:
     def is_bendnode(node):
         return type(node) is tuple and len(node) > 1 and node[0] == "bend"
 
+    def savefig(self, pathname):
+        self.display()
+        plt.savefig(pathname)
+        plt.close()
+
     def display(self):
         draw_nodes_kwds = {'G': self.G, 'pos': self.pos,
                            'node_size': 15, "edgecolors": 'black'}

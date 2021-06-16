@@ -1,5 +1,5 @@
 import networkx as nx
-from topology_shape_metrics.TSM import TSM
+from tsm import TSM
 from matplotlib import pyplot as plt
 import unittest
 
