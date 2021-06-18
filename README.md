@@ -24,7 +24,7 @@ pos = {node: eval(node) for node in G}
 tsm = TSM(G, pos)  # use nx.min_cost_flow to solve minimum cost flow program
 # tsm = TSM(G, pos, uselp=True) # use linear programming to solve minimum cost flow program
 tsm.display()
-plt.savefig("test/outputs/case2.nolp.svg")
+plt.savefig("test/outputs/case2.lp.svg")
 ```
 
 ## Run test
@@ -43,7 +43,7 @@ python test.py TestGML
 |case1|case2|
 |---|---|
 |![case1](https://raw.githubusercontent.com/uknfire/orthogonal-drawing/master/test/outputs/case1.lp.svg)|![case2](https://raw.githubusercontent.com/uknfire/orthogonal-drawing/master/test/outputs/case2.lp.svg)|
-<!-- |---|---| -->
+
 |case3|case4|
 |---|---|
 |![case3](https://raw.githubusercontent.com/uknfire/orthogonal-drawing/master/test/outputs/case3.lp.svg)|![case4](https://raw.githubusercontent.com/uknfire/orthogonal-drawing/master/test/outputs/case4.lp.svg)|
