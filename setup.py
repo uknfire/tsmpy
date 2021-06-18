@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import pathlib
 
 HERE = pathlib.Path(__file__).parent
@@ -13,8 +13,8 @@ setup(
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://github.com/uknfire/tsmpy",
-    license="LICENSE.txt",
-    packages=["tsmpy"],
+    license_files=["LICENSE"],
+    packages=find_packages(),
     keywords=[
         "Graph Drawing",
         "orthogonal",
