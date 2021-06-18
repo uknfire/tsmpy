@@ -42,11 +42,11 @@ python test.py TestGML
 # Example of results
 |case1|case2|
 |---|---|
-|![case1](https://raw.githubusercontent.com/uknfire/orthogonal-drawing/master/test/outputs/case1.lp.svg)|![case2](https://raw.githubusercontent.com/uknfire/orthogonal-drawing/master/test/outputs/case2.lp.svg)|
+|![case1](https://raw.githubusercontent.com/uknfire/tsmpy/master/test/outputs/case1.lp.svg)|![case2](https://raw.githubusercontent.com/uknfire/tsmpy/master/test/outputs/case2.lp.svg)|
 
 |case3|case4|
 |---|---|
-|![case3](https://raw.githubusercontent.com/uknfire/orthogonal-drawing/master/test/outputs/case3.lp.svg)|![case4](https://raw.githubusercontent.com/uknfire/orthogonal-drawing/master/test/outputs/case4.lp.svg)|
+|![case3](https://raw.githubusercontent.com/uknfire/tsmpy/master/test/outputs/case3.lp.svg)|![case4](https://raw.githubusercontent.com/uknfire/tsmpy/master/test/outputs/case4.lp.svg)|
 
 # Playground
 Try editing original graph with [yed](https://www.yworks.com/yed-live/?file=https://gist.githubusercontent.com/uknfire/1a6782b35d066d6e59e00ed8dc0bb795/raw/eaee6eee89c48efa1c234f31fd8f9c32d237ce1e/case2)
