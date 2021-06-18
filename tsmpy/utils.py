@@ -1,9 +1,12 @@
 from networkx import PlanarEmbedding
 from math import atan2
+import networkx as nx
+import matplotlib.patches as mpatches
+from matplotlib import pyplot as plt
+
 
 def convert_pos_to_embedding(G, pos):
-    '''only straight line in G.
-    '''
+    """Make sure only straight line in layout"""
     emd = PlanarEmbedding()
     for node in G:
         neigh_pos = {
@@ -22,9 +25,9 @@ def convert_pos_to_embedding(G, pos):
 
 
 def number_of_cross(G, pos):
-    '''
+    """
     not accurate, may be equal to actual number or double
-    '''
+    """
     def is_cross(pa, pb, pc, pd):
         def xmul(v1, v2):
             return v1[0] * v2[1] - v1[1] * v2[0]
@@ -47,15 +50,15 @@ def number_of_cross(G, pos):
     return count
 
 
-def overlap_nodes(G, pos): # not efficient
+def overlap_nodes(G, pos):  # not efficient
     inv_pos = {}
     for k, v in pos.items():
-        v = tuple(v) # compatible with pos given by nx.spring_layout()
+        v = tuple(v)  # compatible with pos given by nx.spring_layout()
         inv_pos[v] = inv_pos.get(v, ()) + (k,)
     return [node for nodes in inv_pos.values() if len(nodes) > 1 for node in nodes]
 
 
-def overlay_edges(G, pos): # not efficient
+def overlay_edges(G, pos):  # not efficient
     res = set()
     for a, b in G.edges:
         (xa, ya), (xb, yb) = pos[a], pos[b]
@@ -73,3 +76,43 @@ def overlay_edges(G, pos): # not efficient
                     res.add((a, b))
                     res.add((c, d))
     return list(res)
+
+
+def draw_overlay(G, pos, is_bendnode):
+    """Draw graph and highlight bendnodes, overlay nodes and edges"""
+    plt.axis('off')
+    # draw edge first, otherwise edge may not show in plt result
+    # draw all edges
+    nx.draw_networkx_edges(G, pos)
+    # draw all nodes
+    nx.draw_networkx_nodes(G, pos, nodelist=[node for node in G.nodes if not is_bendnode(
+        node)], node_color='white', node_side=15)
+
+    draw_nodes_kwds = {'G': G, 'pos': pos, 'node_size': 15}
+
+    bend_nodelist = [node for node in G.nodes if is_bendnode(node)]
+    # draw bend nodes if exist
+    if bend_nodelist:
+        nx.draw_networkx_nodes(
+            nodelist=bend_nodelist, node_color='grey', **draw_nodes_kwds)
+
+    # draw overlap nodes if exist
+    overlap_nodelist = overlap_nodes(G, pos)
+    if overlap_nodelist:
+        nx.draw_networkx_nodes(
+            nodelist=overlap_nodelist, node_color="red", **draw_nodes_kwds)
+
+    # draw overlay edges if exist
+    overlay_edgelist = overlay_edges(G, pos)
+    if overlay_edgelist:
+        nx.draw_networkx_edges(
+            G, pos, edgelist=overlay_edgelist, edge_color='red')
+
+    # draw patches if exist
+    patches = []
+    if overlap_nodelist or overlay_edgelist:
+        patches.append(mpatches.Patch(color='red', label='overlay'))
+    if bend_nodelist:
+        patches.append(mpatches.Patch(color='grey', label='bend node'))
+    if patches:
+        plt.legend(handles=patches)

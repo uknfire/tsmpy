@@ -6,7 +6,6 @@ from .compaction import Compaction
 from .utils import number_of_cross, overlap_nodes, overlay_edges
 import networkx as nx
 from matplotlib import pyplot as plt
-import matplotlib.patches as mpatches
 
 
 class TSM:
@@ -44,38 +43,12 @@ class TSM:
         plt.close()
 
     def display(self):
-        draw_nodes_kwds = {'G': self.G, 'pos': self.pos,
-                           'node_size': 15, "edgecolors": 'black'}
-
-        nx.draw(node_color='white', **draw_nodes_kwds)
-
-        # draw bend nodes if exist
-        bend_nodelist = [
-            node for node in self.G.nodes if TSM.is_bendnode(node)]
-        if bend_nodelist:
-            nx.draw_networkx_nodes(
-                nodelist=bend_nodelist, node_color='grey', **draw_nodes_kwds)
-
-        # draw overlap nodes if exist
-        overlap_nodelist = overlap_nodes(self.G, self.pos)
-        if overlap_nodelist:
-            nx.draw_networkx_nodes(
-                nodelist=overlap_nodelist, node_color="red", **draw_nodes_kwds)
-
-        # draw overlay edges if exist
-        overlay_edgelist = overlay_edges(self.G, self.pos)
-        if overlay_edgelist:
-            nx.draw_networkx_edges(
-                self.G, self.pos, edgelist=overlay_edgelist, edge_color='red')
-
-        # draw patches if exist
-        patches = []
-        if overlap_nodelist or overlay_edgelist:
-            patches.append(mpatches.Patch(color='red', label='overlay'))
-        if bend_nodelist:
-            patches.append(mpatches.Patch(color='grey', label='bend node'))
-        if patches:
-            plt.legend(handles=patches)
+        """Draw layout with networkx draw lib"""
+        plt.axis('off')
+        # draw edge first, otherwise edge may not be shown in result
+        nx.draw_networkx_edges(self.G, self.pos)
+        nx.draw_networkx_nodes(self.G, self.pos, nodelist=[node for node in self.G.nodes if not TSM.is_bendnode(
+            node)], node_color='white', node_size=15)
 
     @staticmethod
     def precheck(G, pos=None):
