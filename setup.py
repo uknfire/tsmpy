@@ -6,7 +6,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="tsmpy",
-    version="1.0.0",
+    version="0.9.0",
     author="uknfire",
     author_email="uknfire@gmail.com",
     description="An orthogonal layout algorithm, using TSM approach",
