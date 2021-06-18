@@ -30,13 +30,13 @@ plt.savefig("test/outputs/case2.lp.svg")
 ## Run test
 ```bash
 # show help
-python test.py -h
+python test/test.py -h
 
 # run all tests
-python test.py
+python test/test.py
 
 # run all tests in TestGML
-python test.py TestGML
+python test/test.py TestGML
 ```
 
 # Example of results
