@@ -1,5 +1,5 @@
 from .utils import convert_pos_to_embedding
-from .dcel import Dcel
+from tsmpy.dcel import Dcel
 import networkx as nx
 
 

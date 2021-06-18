@@ -1,6 +1,6 @@
 from copy import deepcopy
 from .flownet import Flow_net
-from .dcel import Dcel
+from tsmpy.dcel import Dcel
 import networkx as nx
 
 
