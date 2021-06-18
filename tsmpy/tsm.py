@@ -3,10 +3,16 @@
 from .planarization import Planarization
 from .orthogonalization import Orthogonalization
 from .compaction import Compaction
-from .utils import number_of_cross, overlap_nodes, overlay_edges
+from .utils import number_of_cross
 import networkx as nx
 from matplotlib import pyplot as plt
 
+__all__ = [
+    "TSM",
+    "ortho_layout",
+    "is_bendnode",
+    "precheck"
+]
 
 def ortho_layout(G, init_pos=None, uselp=True):
     """
