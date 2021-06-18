@@ -21,5 +21,6 @@ setup(
         "layout",
         "graph",
     ],
-    install_requires=["networkx", "pulp"]
+    install_requires=["networkx", "pulp"],
+    python_requires=">=3.6",
 )
