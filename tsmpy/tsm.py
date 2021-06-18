@@ -19,7 +19,16 @@ class TSM:
 
     @staticmethod
     def ortho_layout(G, init_pos=None, uselp=True):
-        """Return pos and a new graph which may contain bend nodes"""
+        """
+        Returns
+        -------
+        G : Networkx graph
+            which may contain bend nodes
+
+        pos : dict
+            A dictionary of positions keyed by node
+        """
+
         planar = Planarization(G, init_pos)
         ortho = Orthogonalization(planar, uselp)
         compa = Compaction(ortho)
@@ -70,6 +79,7 @@ class TSM:
 
     @staticmethod
     def precheck(G, pos=None):
+        """Check if input is valid. If not, raise an exception"""
         if max(degree for node, degree in G.degree) > 4:
             raise Exception(
                 "Max node degree larger than 4, which is not supported currently")
@@ -84,7 +94,7 @@ class TSM:
                 raise Exception("G is not a planar graph")
         else:
             if number_of_cross(G, pos) > 0:
-                raise Exception("There are cross edges in pos")
+                raise Exception("There are cross edges in given layout")
 
         for node in G.nodes:
             if type(node) is tuple and len(node) > 1 and node[0] in ("dummy", "bend"):
