@@ -69,4 +69,4 @@ class TSM:
         # draw edge first, otherwise edge may not be shown in result
         nx.draw_networkx_edges(self.G, self.pos)
         nx.draw_networkx_nodes(self.G, self.pos, nodelist=[node for node in self.G.nodes if not is_bendnode(
-            node)], node_color='white', node_size=15)
+            node)], node_color='white', node_size=15, edgecolors="black")
