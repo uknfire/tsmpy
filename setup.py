@@ -13,7 +13,10 @@ setup(
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://github.com/uknfire/tsmpy",
-    license_files=["LICENSE"],
+    project_urls={
+        "Source": "https://github.com/uknfire/tsmpy",
+    },
+    license="MIT",
     packages=find_packages(),
     keywords=[
         "Graph Drawing",
