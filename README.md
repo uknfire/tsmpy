@@ -35,7 +35,18 @@ plt.savefig("test/outputs/case2.lp.svg")
 plt.close()
 ```
 
-## Run test
+
+
+# Example
+|case1|case2|
+|---|---|
+|![case1](https://raw.githubusercontent.com/uknfire/tsmpy/master/test/outputs/case1.lp.svg)|![case2](https://raw.githubusercontent.com/uknfire/tsmpy/master/test/outputs/case2.lp.svg)|
+
+|bend case|grid case|
+|---|---|
+|![bend](https://raw.githubusercontent.com/uknfire/tsmpy/master/test/outputs/bend.svg)|![grid](https://raw.githubusercontent.com/uknfire/tsmpy/master/test/outputs/grid_5x5.svg)|
+
+## Run tests
 ```bash
 # show help
 python test.py -h
@@ -46,15 +57,6 @@ python test.py
 # run all tests in TestGML
 python test.py TestGML
 ```
-
-# Example
-|case1|case2|
-|---|---|
-|![case1](https://raw.githubusercontent.com/uknfire/tsmpy/master/test/outputs/case1.lp.svg)|![case2](https://raw.githubusercontent.com/uknfire/tsmpy/master/test/outputs/case2.lp.svg)|
-
-|bend case|grid case|
-|---|---|
-|![bend](https://raw.githubusercontent.com/uknfire/tsmpy/master/test/outputs/bend.svg)|![grid](https://raw.githubusercontent.com/uknfire/tsmpy/master/test/outputs/grid_5x5.svg)|
 
 # Playground
 Try editing original case2 graph with [yed](https://www.yworks.com/yed-live/?file=https://gist.githubusercontent.com/uknfire/1a6782b35d066d6e59e00ed8dc0bb795/raw/eaee6eee89c48efa1c234f31fd8f9c32d237ce1e/case2)
