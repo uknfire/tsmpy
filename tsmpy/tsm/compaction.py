@@ -1,4 +1,3 @@
-from copy import deepcopy
 from .flownet import Flow_net
 from tsmpy.dcel import Dcel
 import networkx as nx
@@ -14,7 +13,7 @@ class Compaction:
         self.G = self.planar.G
         self.dcel = self.planar.dcel
 
-        flow_dict = deepcopy(ortho.flow_dict)
+        flow_dict = ortho.flow_dict
         self.bend_point_processor(flow_dict)
         ori_edges = list(self.G.edges)
         halfedge_side = self.face_side_processor(flow_dict)
