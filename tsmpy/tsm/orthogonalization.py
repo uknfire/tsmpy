@@ -1,6 +1,6 @@
 import pulp
 from collections import defaultdict
-from .flownet import Flow_net
+from .flownet import FlowNet
 
 class Orthogonalization:
     '''works on a planar embedding, changes shape of the graph.
@@ -16,7 +16,7 @@ class Orthogonalization:
             self.flow_dict = self.lp_solve()
 
     def face_determination(self):
-        flow_network = Flow_net()
+        flow_network = FlowNet()
 
         for vertex in self.planar.dcel.vertices.values():
             flow_network.add_v(vertex.id)

@@ -1,4 +1,4 @@
-from .flownet import Flow_net
+from .flownet import FlowNet
 from tsmpy.dcel import Dcel
 import networkx as nx
 
@@ -243,7 +243,7 @@ class Compaction:
         """
 
         def build_flow(target_side):
-            flow = Flow_net()
+            flow = FlowNet()
             for he, side in halfedge_side.items():
                 if side == target_side:
                     lf, rf = he.twin.inc, he.inc

@@ -3,7 +3,8 @@
 import networkx as nx
 from collections import defaultdict
 
-class Flow_net(nx.MultiDiGraph):
+
+class FlowNet(nx.MultiDiGraph):
     def add_v2f(self, v, f, key):
         self.add_edge(v, f, key=key, lowerbound=1, capacity=4, weight=0)
 
@@ -27,26 +28,26 @@ class Flow_net(nx.MultiDiGraph):
                            for u, v, key in self.out_edges(node, keys=True))
             return in_flow - out_flow
 
-        def split(multi_flowG):
+        def split(G):
             base_dict = defaultdict(lambda: defaultdict(dict))
-            new_mdg = nx.MultiDiGraph()
+            new_G = nx.MultiDiGraph()
 
-            for u, v, key in multi_flowG.edges:
-                lowerbound = multi_flowG[u][v][key]['lowerbound']
+            for u, v, key in G.edges:
+                lowerbound = G[u][v][key]['lowerbound']
                 base_dict[u][v][key] = lowerbound
-                new_mdg.add_edge(u, v, key,
-                                 capacity=multi_flowG[u][v][key]['capacity'] -
-                                 lowerbound,
-                                 weight=multi_flowG[u][v][key]['weight'],
-                                 )
-            for node in multi_flowG:
-                new_mdg.nodes[node]['demand'] =  \
-                    multi_flowG.nodes[node]['demand'] - \
+                new_G.add_edge(u, v, key,
+                               capacity=G[u][v][key]['capacity'] -
+                               lowerbound,
+                               weight=G[u][v][key]['weight'],
+                               )
+            for node in G:
+                new_G.nodes[node]['demand'] =  \
+                    G.nodes[node]['demand'] - \
                     get_demand(base_dict, node)
-            return base_dict, new_mdg
+            return base_dict, new_G
 
-        base_dict, new_mdg = split(self)
-        flow_dict = nx.min_cost_flow(new_mdg)
+        base_dict, new_G = split(self)
+        flow_dict = nx.min_cost_flow(new_G)
         for u, v, key in self.edges:
             flow_dict[u][v][key] += base_dict[u][v][key]
 
@@ -54,7 +55,4 @@ class Flow_net(nx.MultiDiGraph):
         return flow_dict
 
     def cost_of_flow(self, flow_dict):
-        cost = 0
-        for u, v, key in self.edges:
-            cost += flow_dict[u][v][key] * self[u][v][key]['weight']
-        return cost
+        return sum(flow_dict[u][v][key] * self[u][v][key]['weight'] for u, v, key in self.edges)
