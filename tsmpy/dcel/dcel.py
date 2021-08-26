@@ -11,7 +11,7 @@ class Dcel:
     Build double connected edge list for a connected planar graph.
     Require the number of nodes greater than 1.
     Naming vertice with node name.
-    Naming halfedge with (u, v).
+    Naming half_edge with (u, v).
     Nmming face with ('face', %d).
     """
 
@@ -87,8 +87,8 @@ class Dcel:
             self.half_edges[v1, v2].twin = self.half_edges[v2, v1]
             self.half_edges[v2, v1].twin = self.half_edges[v1, v2]
 
-    def connect(self, face: Face, u, v, halfedge_side, side_uv):  # u, v in same face
-        def insert_halfedge(u, v, f, prev_he, succ_he):
+    def connect(self, face: Face, u, v, half_edge_side, side_uv):  # u, v in same face
+        def insert_half_edge(u, v, f, prev_he, succ_he):
             he = HalfEdge((u, v))
             self.half_edges[u, v] = he
             f.inc = he
@@ -112,12 +112,12 @@ class Dcel:
         hes_v = [he for he in self.vertices[v].surround_half_edges()
                  if he.inc == face]
 
-        # It's very important to select the  right halfedge, depending on its side
+        # It's very important to select the  right half_edge, depending on its side
         def select(outgoing_side, hes):
             if len(hes) == 1:
                 return hes[0]
 
-            side_dict = {halfedge_side[he]: he for he in hes}
+            side_dict = {half_edge_side[he]: he for he in hes}
             for side in [(outgoing_side + i) % 4 for i in [3, 2, 1]]:
                 if side in side_dict:
                     return side_dict[side]
@@ -130,8 +130,8 @@ class Dcel:
         prev_vu = he_v.prev
         succ_vu = he_u
 
-        insert_halfedge(u, v, face_r, prev_uv, succ_uv)
-        insert_halfedge(v, u, face_l, prev_vu, succ_vu)
+        insert_half_edge(u, v, face_r, prev_uv, succ_uv)
+        insert_half_edge(v, u, face_l, prev_vu, succ_vu)
         self.half_edges[u, v].twin = self.half_edges[v, u]
         self.half_edges[v, u].twin = self.half_edges[u, v]
         self.faces.pop(face.id)
@@ -140,7 +140,7 @@ class Dcel:
         assert type(u) != Vertex
         assert type(v) != Vertex
 
-        def insert_halfedge(u, v, f, prev_he, succ_he):
+        def insert_half_edge(u, v, f, prev_he, succ_he):
             he = HalfEdge((u, v))
             self.half_edges[u, v] = he
             he.set(None, self.vertices[u], prev_he, succ_he, f)
@@ -153,7 +153,7 @@ class Dcel:
         prev_vu = he_v.prev
         succ_vu = he_u
 
-        insert_halfedge(u, v, face, prev_uv, succ_uv)
-        insert_halfedge(v, u, face, prev_vu, succ_vu)
+        insert_half_edge(u, v, face, prev_uv, succ_uv)
+        insert_half_edge(v, u, face, prev_vu, succ_vu)
         self.half_edges[u, v].twin = self.half_edges[v, u]
         self.half_edges[v, u].twin = self.half_edges[u, v]
