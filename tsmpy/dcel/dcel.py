@@ -23,38 +23,30 @@ class Dcel:
 
         self.vertices = {node: Vertex(node) for node in G.nodes}
 
+        def add_half_edge(u, v):
+            he = HalfEdge(u, v)
+            self.half_edges[u, v] = he
+            if (v, u) in self.half_edges:
+                he.twin = self.half_edges[v, u]
+                he.twin.twin = he
+            he.ori = self.vertices[u]
+            he.ori.inc = he
+
         for u, v in G.edges:
-            he1, he2 = HalfEdge(u, v), HalfEdge(v, u)
-            self.half_edges[he1.id] = he1
-            self.half_edges[he2.id] = he2
-            he1.twin = he2
-            he1.ori = self.vertices[u]
-            self.vertices[u].inc = he1
+            add_half_edge(u, v)
+            add_half_edge(v, u)
 
-            he2.twin = he1
-            he2.ori = self.vertices[v]
-            self.vertices[v].inc = he2
-
-        for he in self.half_edges.values():
-            u, v = he.get_points()
+        for (u, v), he in self.half_edges.items():
             he.succ = self.half_edges[embedding.next_face_half_edge(u, v)]
             he.succ.prev = he
 
-        for he in self.half_edges.values():
+        for (u, v), he in self.half_edges.items():
             if not he.inc:
-                face_id = ("face", len(self.faces))
-                face = Face(face_id)
+                face = Face(("face", len(self.faces)))
+                self.faces[face.id] = face
                 face.inc = he
-                self.faces[face_id] = face
-
-                nodes_id = embedding.traverse_face(*he.get_points())
-                for v1_id, v2_id in zip(nodes_id, nodes_id[1:]+nodes_id[:1]):
-                    other = self.half_edges[v1_id, v2_id]
-                    assert not other.inc
-                    other.inc = face
-
-        if not self.faces:
-            self.faces[('face', 0)] = Face(('face', 0))
+                for e in he.traverse():
+                    e.inc = face
 
     def add_node_between(self, u, node_name, v):
         def insert_node(u, v, mi):

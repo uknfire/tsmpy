@@ -7,9 +7,6 @@ class HalfEdge:
         self.prev = None
         self.succ = None
 
-    def get_points(self):
-        return self.ori.id, self.twin.ori.id
-
     def set(self, twin, ori, prev, succ, inc):
         self.twin = twin
         self.ori = ori

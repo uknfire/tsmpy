@@ -38,7 +38,7 @@ class Compaction:
         for he, num_bends in bends.items():
             # Q: what if there are bends on both (u, v) and (v, u)?
             # A: Impossible, not a min cost
-            u, v = he.get_points()
+            u, v = he.ori.id, he.twin.ori.id
             lf_id, rf_id = he.twin.inc.id, he.inc.id
 
             self.G.remove_edge(u, v)
