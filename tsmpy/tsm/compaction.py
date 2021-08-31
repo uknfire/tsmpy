@@ -9,9 +9,8 @@ class Compaction:
     """
 
     def __init__(self, ortho):
-        self.planar = ortho.planar
-        self.G = self.planar.G
-        self.dcel = self.planar.dcel
+        self.G = ortho.G
+        self.dcel = ortho.dcel
 
         flow_dict = ortho.flow_dict
         self.bend_point_processor(flow_dict)
