@@ -21,11 +21,10 @@ class Dcel:
         self.faces = {}
         self.ext_face = None
 
-        for node in G.nodes:
-            self.vertices[node] = Vertex(node)
+        self.vertices = {node: Vertex(node) for node in G.nodes}
 
         for u, v in G.edges:
-            he1, he2 = HalfEdge((u, v)), HalfEdge((v, u))
+            he1, he2 = HalfEdge(u, v), HalfEdge(v, u)
             self.half_edges[he1.id] = he1
             self.half_edges[he2.id] = he2
             he1.twin = he2
@@ -60,8 +59,8 @@ class Dcel:
     def add_node_between(self, u, node_name, v):
         def insert_node(u, v, mi):
             he = self.half_edges.pop((u, v))
-            he1 = HalfEdge((u, mi.id))
-            he2 = HalfEdge((mi.id, v))
+            he1 = HalfEdge(u, mi.id)
+            he2 = HalfEdge(mi.id, v)
             mi.inc = he2
             # update half_edges
             self.half_edges[u, mi.id] = he1
@@ -89,7 +88,7 @@ class Dcel:
 
     def connect(self, face: Face, u, v, half_edge_side, side_uv):  # u, v in same face
         def insert_half_edge(u, v, f, prev_he, succ_he):
-            he = HalfEdge((u, v))
+            he = HalfEdge(u, v)
             self.half_edges[u, v] = he
             f.inc = he
             he.set(None, self.vertices[u], prev_he, succ_he, f)
@@ -141,7 +140,7 @@ class Dcel:
         assert type(v) != Vertex
 
         def insert_half_edge(u, v, f, prev_he, succ_he):
-            he = HalfEdge((u, v))
+            he = HalfEdge(u, v)
             self.half_edges[u, v] = he
             he.set(None, self.vertices[u], prev_he, succ_he, f)
             prev_he.succ = he

@@ -1,6 +1,6 @@
 class HalfEdge:
-    def __init__(self, name):
-        self.id = name
+    def __init__(self, u, v):
+        self.id = (u, v)
         self.inc = None  # the incident face at its right hand
         self.twin = None
         self.ori = None
