@@ -93,7 +93,7 @@ class Orthogonalization:
                  self.flow_network.out_edges(v, keys=True)]
             )
 
-        state = prob.solve()
+        state = prob.solve(pulp.PULP_CBC_CMD(msg=False))
         res = defaultdict(lambda: defaultdict(dict))
         if state == 1:  # update flow_dict
             self.flow_network.cost = pulp.value(prob.objective)
