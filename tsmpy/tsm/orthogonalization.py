@@ -61,6 +61,8 @@ class Orthogonalization:
             )
 
         objs = []
+
+        # cost of bend
         for he in self.dcel.half_edges.values():
             lf, rf = he.twin.inc.id, he.inc.id
             objs.append(
@@ -68,7 +70,7 @@ class Orthogonalization:
                 var_dict[lf, rf, he.id]
             )
 
-        # Add bend cost
+        # Add nonsymmetric cost
         for v in self.G:
             if self.G.degree(v) == 2:
                 (f1, he1_id), (f2, he2_id) = [(f, key)
@@ -78,8 +80,8 @@ class Orthogonalization:
                 y = var_dict[v, f2, he2_id]
                 p = pulp.LpVariable(
                     x.name + "*", None, None, pulp.LpInteger)
-                prob.addConstraint(x - y <= p)
-                prob.addConstraint(y - x <= p)
+                prob.addConstraint(x - y <= p + p + p + p)
+                prob.addConstraint(y - x <= p + p + p + p)
                 objs.append(p)
 
         prob += pulp.lpSum(objs)  # number of bends in graph
