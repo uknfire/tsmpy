@@ -85,8 +85,13 @@ class Orthogonalization:
         prob += pulp.lpSum(objs)  # number of bends in graph
 
         for f in self.dcel.faces:
-            prob += self.flow_network.nodes[f]['demand'] == pulp.lpSum(
+            in_sum = pulp.lpSum(
                 [var_dict[v, f, he_id] for v, _, he_id in self.flow_network.in_edges(f, keys=True)])
+
+            out_sum = pulp.lpSum(
+                [var_dict[f, v, he_id] for _, v, he_id in self.flow_network.out_edges(f, keys=True)])
+
+            prob += self.flow_network.nodes[f]['demand'] == in_sum - out_sum
         for v in self.G:
             prob += -self.flow_network.nodes[v]['demand'] == pulp.lpSum(
                 [var_dict[v, f, he_id] for _, f, he_id in
