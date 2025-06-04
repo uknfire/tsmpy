@@ -2,6 +2,9 @@ import networkx as nx
 from tsmpy import TSM
 from matplotlib import pyplot as plt
 import unittest
+import os
+
+os.makedirs("test/outputs", exist_ok=True)
 
 
 class TestRefine(unittest.TestCase):
