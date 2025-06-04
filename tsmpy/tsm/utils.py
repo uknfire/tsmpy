@@ -25,26 +25,55 @@ def convert_pos_to_embedding(G, pos):
 
 
 def number_of_cross(G, pos):
-    """
-    not accurate, may be equal to actual number or double
-    """
-    def is_cross(pa, pb, pc, pd):
-        def xmul(v1, v2):
-            return v1[0] * v2[1] - v1[1] * v2[0]
+    """Return the number of edge crossings in ``G`` given ``pos``.
 
-        def f(pa, pb, p):
-            return (pa[1] - pb[1]) * (p[0] - pb[0]) - (p[1] - pb[1]) * (pa[0] - pb[0])
+    Each crossing is counted once. The routine relies on a robust
+    segment intersection test and avoids double counting by iterating
+    over unique edge pairs.
 
-        ca = (pa[0] - pc[0], pa[1] - pc[1])
-        cb = (pb[0] - pc[0], pb[1] - pc[1])
-        cd = (pd[0] - pc[0], pd[1] - pc[1])
-        return xmul(ca, cd) >= 0 and xmul(cd, cb) >= 0 and f(pa, pb, pc) * f(pa, pb, pd) < 0
+    The previous implementation relied on an ad-hoc vector product
+    check which produced false positives for some layouts (see issue
+    #6 of the upstream project).  The routine below follows the
+    standard segment intersection algorithm using orientation tests and
+    also handles collinear overlap cases correctly.
+    """
+
+    def do_intersect(p1, q1, p2, q2):
+        def orientation(p, q, r):
+            val = (q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1])
+            if val == 0:
+                return 0
+            return 1 if val > 0 else 2
+
+        def on_segment(p, q, r):
+            return (
+                min(p[0], r[0]) <= q[0] <= max(p[0], r[0])
+                and min(p[1], r[1]) <= q[1] <= max(p[1], r[1])
+            )
+
+        o1 = orientation(p1, q1, p2)
+        o2 = orientation(p1, q1, q2)
+        o3 = orientation(p2, q2, p1)
+        o4 = orientation(p2, q2, q1)
+
+        if o1 != o2 and o3 != o4:
+            return True
+        if o1 == 0 and on_segment(p1, p2, q1):
+            return True
+        if o2 == 0 and on_segment(p1, q2, q1):
+            return True
+        if o3 == 0 and on_segment(p2, p1, q2):
+            return True
+        if o4 == 0 and on_segment(p2, q1, q2):
+            return True
+        return False
 
     count = 0
-    for a, b in G.edges:
-        for c, d in G.edges:
-            if a not in (c, d) and b not in (c, d):
-                if is_cross(pos[a], pos[b], pos[c], pos[d]):
+    edges = list(G.edges)
+    for i, (a, b) in enumerate(edges):
+        for c, d in edges[i + 1:]:
+            if len({a, b, c, d}) == 4:
+                if do_intersect(pos[a], pos[b], pos[c], pos[d]):
                     count += 1
 
     return count
