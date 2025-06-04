@@ -2,6 +2,9 @@ import networkx as nx
 from tsmpy import TSM
 from matplotlib import pyplot as plt
 import unittest
+import re
+import ast
+from tsmpy.tsm.utils import number_of_cross
 
 
 class TestRefine(unittest.TestCase):
@@ -123,6 +126,22 @@ class TestGrid(unittest.TestCase):
 
     def test_1x99(self):
         TestGrid._test_grid(1, 99)
+
+
+class TestIssue6(unittest.TestCase):
+    def test_no_cross(self):
+        with open('test/inputs/issue6.txt') as f:
+            text = f.read()
+        node_match = re.search(r"nodeData\s*=\s*(\{.*?\})\s*edgeData", text, re.S)
+        edge_match = re.search(r"edgeData\s*=\s*(\[.*?\])\s*G\s*=", text, re.S)
+        node_data = ast.literal_eval(node_match.group(1))
+        edge_data = ast.literal_eval(edge_match.group(1))
+
+        G = nx.Graph()
+        G.add_edges_from(edge_data)
+        pos = {n: tuple(node_data[n]) for n in node_data}
+
+        self.assertEqual(number_of_cross(G, pos), 0)
 
 
 
