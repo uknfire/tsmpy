@@ -1,43 +1,38 @@
-# Introduction
+# tsmpy
 
-An implementation of orthogonal drawing algorithm in Python
+`tsmpy` is a Python implementation of an orthogonal layout algorithm based on the Topology-Shape-Metrics (TSM) approach. The algorithm is inspired by [A Generic Framework for the Topology-Shape-Metrics Based Layout](https://rtsys.informatik.uni-kiel.de/~biblio/downloads/theses/pkl-mt.pdf).
 
-Main idea comes from [A Generic Framework for the Topology-Shape-Metrics Based Layout](https://rtsys.informatik.uni-kiel.de/~biblio/downloads/theses/pkl-mt.pdf)
+## Installation
 
-# How to run code
-## Install requirements
 ```bash
 pip install -r requirements.txt
 ```
-## Usage
-```Python
-# in root dir
-import networkx as nx
-from tsmpy import TSM
-from matplotlib import pyplot as plt
 
+## Quick start
+
+```python
+import networkx as nx
+from matplotlib import pyplot as plt
+from tsmpy import TSM
+
+# Load a planar graph from the test data
 G = nx.Graph(nx.read_gml("test/inputs/case2.gml"))
 
-# initial layout, it will be converted to an embedding
+# Optional: provide an initial embedding
 pos = {node: eval(node) for node in G}
 
-# pos is an optional, if pos is None, embedding will be given by nx.check_planarity
-
-# use linear programming to solve minimum cost flow program
+# Solve the minimum cost flow problem using linear programming
 tsm = TSM(G, pos)
+# tsm = TSM(G, pos, uselp=False)  # use networkx.min_cost_flow instead
 
-# or use nx.min_cost_flow to solve minimum cost flow program
-# it is faster but produces worse result
-# tsm = TSM(G, pos, uselp=False)
-
+# Display and save the layout
 tsm.display()
 plt.savefig("test/outputs/case2.lp.svg")
 plt.close()
 ```
 
+## Examples
 
-
-# Example
 |case1|case2|
 |---|---|
 |![case1](https://raw.githubusercontent.com/uknfire/tsmpy/master/test/outputs/case1.lp.svg)|![case2](https://raw.githubusercontent.com/uknfire/tsmpy/master/test/outputs/case2.lp.svg)|
@@ -46,7 +41,8 @@ plt.close()
 |---|---|
 |![bend](https://raw.githubusercontent.com/uknfire/tsmpy/master/test/outputs/bend.svg)|![grid](https://raw.githubusercontent.com/uknfire/tsmpy/master/test/outputs/grid_5x5.svg)|
 
-## Run tests
+## Running tests
+
 ```bash
 # show help
 python test.py -h
@@ -58,19 +54,23 @@ python test.py
 python test.py TestGML
 ```
 
-# Playground
-Try editing original case2 graph with [yed](https://www.yworks.com/yed-live/?file=https://gist.githubusercontent.com/uknfire/1a6782b35d066d6e59e00ed8dc0bb795/raw/eaee6eee89c48efa1c234f31fd8f9c32d237ce1e/case2)
-# Requirements for input graph
+## Playground
+
+Try editing the original `case2` graph with [yed](https://www.yworks.com/yed-live/?file=https://gist.githubusercontent.com/uknfire/1a6782b35d066d6e59e00ed8dc0bb795/raw/eaee6eee89c48efa1c234f31fd8f9c32d237ce1e/case2).
+
+### Requirements for input graph
+
 * Planar
 * Connected
-* Max node degree is no more than 4
-* No selfloop
+* Maximum node degree is 4
+* No self-loops
 
-# Features
-* Using linear programing to solve minimum-cost flow problem, to reduce number of bends
+## Features
 
+* Linear programming based minimum-cost flow formulation to reduce the number of bends
 
-# TODO
+## TODO
+
 - [ ] Cleaner code
 - [ ] More comments
 - [x] Fix overlay
